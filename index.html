@@ -1012,26 +1012,17 @@
       mcqWrong
     };
 
-    // ── POST to Google Sheet via hidden iframe (no CORS issues) ──
+    // ── POST to Google Sheet ──
     if (SCRIPT_URL && SCRIPT_URL !== "YOUR_APPS_SCRIPT_URL_HERE") {
-      const iframe = document.createElement("iframe");
-      iframe.name = "hidden_submit";
-      iframe.style.display = "none";
-      document.body.appendChild(iframe);
-
-      const form = document.createElement("form");
-      form.method = "POST";
-      form.action = SCRIPT_URL;
-      form.target = "hidden_submit";
-
-      const input = document.createElement("input");
-      input.type = "hidden";
-      input.name = "data";
-      input.value = JSON.stringify(payload);
-      form.appendChild(input);
-
-      document.body.appendChild(form);
-      form.submit();
+      const form = new FormData();
+      form.append("data", JSON.stringify(payload));
+      fetch(SCRIPT_URL, {
+        method: "POST",
+        body: form
+      })
+      .then(r => r.json())
+      .then(r => { if (r.status !== "ok") console.warn("Sheet error:", r); })
+      .catch(err => console.warn("Sheet logging failed:", err));
     } else {
       // ── Fallback: console (remove once SCRIPT_URL is set) ──
       console.log("📊 PLACEMENT TEST RESULTS");
