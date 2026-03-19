@@ -803,6 +803,7 @@
 <script>
   // ── Paste your Apps Script Web App URL here ──
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzGAvovySL-q1ViqefKkwWjIk8fNCeodkplFTzUq6cMhJiAzrtWC9YuqzQmrvac_sVUOw/exec";
+  const TOKEN = new URLSearchParams(window.location.search).get("t") || "";
 
   // Answer key — MCQ only (auto-graded)
   const mcqAnswers = {
@@ -1000,6 +1001,7 @@
       .map(q => q + ": \"" + mcqDetail[q].question + "\" (gave: " + mcqDetail[q].given + ", correct: " + mcqDetail[q].correct + ")");
 
     const payload = {
+      token: TOKEN,
       pct, band,
       mcqScore, mcqTotal,
       fillScore, fillTotal,
@@ -1010,15 +1012,26 @@
       mcqWrong
     };
 
-    // ── POST to Google Sheet ──
+    // ── POST to Google Sheet via hidden iframe (no CORS issues) ──
     if (SCRIPT_URL && SCRIPT_URL !== "YOUR_APPS_SCRIPT_URL_HERE") {
-      const form = new FormData();
-      form.append("data", JSON.stringify(payload));
-      fetch(SCRIPT_URL, {
-        method: "POST",
-        mode: "no-cors",
-        body: form
-      }).catch(err => console.warn("Sheet logging failed:", err));
+      const iframe = document.createElement("iframe");
+      iframe.name = "hidden_submit";
+      iframe.style.display = "none";
+      document.body.appendChild(iframe);
+
+      const form = document.createElement("form");
+      form.method = "POST";
+      form.action = SCRIPT_URL;
+      form.target = "hidden_submit";
+
+      const input = document.createElement("input");
+      input.type = "hidden";
+      input.name = "data";
+      input.value = JSON.stringify(payload);
+      form.appendChild(input);
+
+      document.body.appendChild(form);
+      form.submit();
     } else {
       // ── Fallback: console (remove once SCRIPT_URL is set) ──
       console.log("📊 PLACEMENT TEST RESULTS");
