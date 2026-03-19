@@ -1012,17 +1012,11 @@
       mcqWrong
     };
 
-    // ── POST to Google Sheet ──
+    // ── GET to Google Sheet (no CORS issues with Apps Script) ──
     if (SCRIPT_URL && SCRIPT_URL !== "YOUR_APPS_SCRIPT_URL_HERE") {
-      const form = new FormData();
-      form.append("data", JSON.stringify(payload));
-      fetch(SCRIPT_URL, {
-        method: "POST",
-        body: form
-      })
-      .then(r => r.json())
-      .then(r => { if (r.status !== "ok") console.warn("Sheet error:", r); })
-      .catch(err => console.warn("Sheet logging failed:", err));
+      const url = SCRIPT_URL + "?data=" + encodeURIComponent(JSON.stringify(payload));
+      fetch(url, { method: "GET", mode: "no-cors" })
+        .catch(err => console.warn("Sheet logging failed:", err));
     } else {
       // ── Fallback: console (remove once SCRIPT_URL is set) ──
       console.log("📊 PLACEMENT TEST RESULTS");
