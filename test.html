@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>English Practice</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#faf8f5; --paper:#fff; --ink:#1a1a18; --ink-light:#5a5a54;
+    --rule:#e8e4dc; --accent:#c84b2f; --accent-soft:#f5ede9;
+    --correct:#2d6a4f; --correct-soft:#e8f5ef; --shadow:0 2px 12px rgba(0,0,0,0.07);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);font-family:'DM Sans',sans-serif;font-weight:300;color:var(--ink);min-height:100vh;padding:0 0 80px}
+
+  /* SHARED */
+  .section-label{font-family:'Lora',serif;font-size:.78rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);border-bottom:1px solid var(--rule);padding-bottom:10px;margin:40px 0 20px}
+
+  /* EVAL */
+  .eval-wrap{max-width:740px;margin:0 auto;padding:60px 24px}
+  .eval-header{text-align:center;margin-bottom:48px}
+  .eval-header h1{font-family:'Lora',serif;font-size:2rem;margin-bottom:8px}
+  .eval-header p{color:var(--ink-light);font-size:.95rem}
+  .upload-zone{border:2px dashed var(--rule);border-radius:12px;padding:48px 24px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;background:var(--paper)}
+  .upload-zone:hover{border-color:var(--accent);background:var(--accent-soft)}
+  .upload-zone p{color:var(--ink-light);font-size:.95rem;margin-top:8px}
+  .upload-zone .icon{font-size:2.5rem;margin-bottom:8px}
+  #fileInput{display:none}
+  .results-panel{display:none;margin-top:40px}
+  .results-panel.show{display:block}
+  .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;margin-bottom:32px}
+  .stat-card{background:var(--paper);border:1px solid var(--rule);border-radius:10px;padding:18px;text-align:center;box-shadow:var(--shadow)}
+  .stat-card .val{font-family:'Lora',serif;font-size:1.8rem;font-weight:600;color:var(--accent)}
+  .stat-card .lbl{font-size:.75rem;color:var(--ink-light);margin-top:4px;text-transform:uppercase;letter-spacing:.08em}
+  .band-card{background:var(--ink);color:#fff;border-radius:10px;padding:20px 24px;margin-bottom:32px;text-align:center}
+  .band-card .band-val{font-family:'Lora',serif;font-size:1.3rem;margin-bottom:4px}
+  .band-card .band-sub{font-size:.85rem;opacity:.6}
+  .bucket-row{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--paper);border:1px solid var(--rule);border-radius:8px;margin-bottom:8px;font-size:.9rem}
+  .bucket-row .score{font-weight:500;font-family:'Lora',serif;white-space:nowrap;margin-left:12px}
+  .bucket-row.pass{border-left:3px solid var(--correct)}
+  .bucket-row.warn{border-left:3px solid #e6a817}
+  .bucket-row.fail{border-left:3px solid var(--accent)}
+  .mcq-row{padding:8px 14px;font-size:.88rem;border-radius:6px;margin-bottom:6px}
+  .mcq-row.pass{background:var(--correct-soft);color:var(--correct)}
+  .mcq-row.fail{background:#fdecea;color:#a0291a}
+  .mcq-row .q-label{font-weight:500}
+  .mcq-row .q-detail{opacity:.75;font-size:.82rem;margin-top:2px}
+  .fill-row{padding:8px 14px;font-size:.88rem;border-radius:6px;margin-bottom:6px}
+  .fill-row.pass{background:var(--correct-soft);color:var(--correct)}
+  .fill-row.fail{background:#fdecea;color:#a0291a}
+  .sentence-row{padding:10px 14px;background:var(--paper);border:1px solid var(--rule);border-radius:8px;margin-bottom:8px;font-size:.9rem}
+  .sentence-row .q-id{font-weight:500;color:var(--accent);margin-bottom:4px;font-size:.8rem;text-transform:uppercase;letter-spacing:.06em}
+  .sentence-row .q-text{font-style:italic;color:var(--ink-light)}
+  .sentence-row .q-text.empty{color:#ccc}
+
+  /* TEST */
+  .header{background:var(--ink);color:#fff;padding:48px 40px 36px;text-align:center;position:relative;overflow:hidden}
+  .header::before{content:'';position:absolute;top:-40px;left:-40px;right:-40px;bottom:-40px;background:repeating-linear-gradient(45deg,transparent,transparent 20px,rgba(255,255,255,.02) 20px,rgba(255,255,255,.02) 21px)}
+  .header-inner{position:relative;z-index:1}
+  .header h1{font-family:'Lora',serif;font-size:2.2rem;font-weight:600;letter-spacing:-.02em;margin-bottom:8px}
+  .header p{font-size:.95rem;opacity:.65;font-weight:300;letter-spacing:.03em}
+  .pill{display:inline-block;margin-top:16px;background:var(--accent);color:#fff;font-size:.75rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;padding:5px 14px;border-radius:20px}
+  .progress-bar-wrap{background:var(--rule);height:4px;position:sticky;top:0;z-index:100}
+  .progress-bar{height:100%;background:var(--accent);width:0%;transition:width .3s ease}
+  .container{max-width:740px;margin:0 auto;padding:40px 24px}
+  .section-label-test{font-family:'Lora',serif;font-size:.78rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);border-bottom:1px solid var(--rule);padding-bottom:10px;margin:48px 0 28px}
+  .question{background:var(--paper);border:1px solid var(--rule);border-radius:10px;padding:22px 26px;margin-bottom:14px;box-shadow:var(--shadow);transition:border-color .2s}
+  .question:hover{border-color:#d8d4cc}
+  .question.answered{border-left:3px solid var(--accent)}
+  .q-stem{display:flex;gap:14px;align-items:baseline;margin-bottom:16px}
+  .q-num{font-family:'Lora',serif;font-size:.8rem;font-weight:600;color:var(--accent);min-width:22px;padding-top:1px}
+  .q-text{font-size:1rem;line-height:1.55;font-weight:400;color:var(--ink)}
+  .passage-box{background:#fdf9f7;border:1px solid #e8ddd8;border-radius:10px;padding:20px 26px;margin-bottom:14px;font-style:italic;color:var(--ink-light);font-size:.95rem;line-height:1.7}
+  .options{display:flex;flex-direction:column;gap:8px;padding-left:36px}
+  .option-label{display:flex;align-items:center;gap:12px;cursor:pointer;padding:8px 12px;border-radius:7px;border:1px solid transparent;transition:background .15s,border-color .15s;font-size:.95rem;color:var(--ink-light)}
+  .option-label:hover{background:var(--accent-soft);border-color:#e8c4bc;color:var(--ink)}
+  .option-label input[type=radio]{display:none}
+  .radio-dot{width:18px;height:18px;border-radius:50%;border:2px solid #ccc;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:border-color .15s}
+  .option-label input:checked+.radio-dot{border-color:var(--accent);background:var(--accent)}
+  .option-label input:checked+.radio-dot::after{content:'';width:6px;height:6px;background:#fff;border-radius:50%}
+  .option-label:has(input:checked){background:var(--accent-soft);border-color:#e0b0a4;color:var(--ink);font-weight:500}
+  .text-answer{margin-left:36px;margin-top:4px}
+  .text-answer input[type=text]{width:100%;max-width:320px;border:none;border-bottom:2px solid var(--rule);background:transparent;font-family:'DM Sans',sans-serif;font-size:.95rem;color:var(--ink);padding:6px 4px;outline:none;transition:border-color .2s}
+  .text-answer input:focus{border-bottom-color:var(--accent)}
+  .text-hint{font-size:.78rem;color:var(--ink-light);margin-top:4px;font-style:italic}
+  .submit-area{margin-top:52px;text-align:center;padding:40px 24px;background:var(--paper);border:1px solid var(--rule);border-radius:12px;box-shadow:var(--shadow)}
+  .submit-area p{font-size:.9rem;color:var(--ink-light);margin-bottom:24px;line-height:1.6}
+  .btn-submit{background:var(--accent);color:#fff;border:none;padding:14px 44px;font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:500;border-radius:8px;cursor:pointer;letter-spacing:.02em;transition:background .2s,transform .1s;box-shadow:0 4px 16px rgba(200,75,47,.25)}
+  .btn-submit:hover{background:#b03d24;transform:translateY(-1px)}
+  .btn-submit:active{transform:translateY(0)}
+  .done-msg{display:none;text-align:center;padding:48px 24px;background:var(--correct-soft);border:1px solid #b7dcc9;border-radius:12px;margin-top:40px}
+  .done-msg.show{display:block}
+  .done-msg h2{font-family:'Lora',serif;font-size:1.6rem;color:var(--correct);margin-bottom:10px}
+  .done-msg p{color:var(--ink-light);font-size:.95rem;line-height:1.7}
+  .warning{background:#fff8e6;border:1px solid #f0d98a;border-radius:8px;padding:12px 18px;font-size:.88rem;color:#7a5a00;margin-top:16px;display:none}
+  .warning.show{display:block}
+</style>
+</head>
+<body>
+
+<!-- EVAL MODE -->
+<div id="evalMode" style="display:none">
+  <div class="eval-wrap">
+    <div class="eval-header">
+      <h1>Results Evaluator</h1>
+      <p>Upload the .gauge file to see the full breakdown.</p>
+    </div>
+    <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
+      <div class="icon">📂</div>
+      <strong>Click to upload a .gauge file</strong>
+      <p>Or drag and drop it here</p>
+    </div>
+    <input type="file" id="fileInput" accept=".gauge">
+    <div class="results-panel" id="resultsPanel">
+      <div class="band-card">
+        <div class="band-val" id="rBand">—</div>
+        <div class="band-sub" id="rPct">—</div>
+      </div>
+      <div class="summary-grid">
+        <div class="stat-card"><div class="val" id="rOverall">—</div><div class="lbl">Overall</div></div>
+        <div class="stat-card"><div class="val" id="rMCQ">—</div><div class="lbl">MCQ</div></div>
+        <div class="stat-card"><div class="val" id="rFill">—</div><div class="lbl">Fill-in</div></div>
+        <div class="stat-card"><div class="val" id="rReading">—</div><div class="lbl">Reading</div></div>
+      </div>
+      <div class="section-label">Timing</div>
+      <div id="rTiming"></div>
+      <div class="section-label">Topic breakdown</div>
+      <div id="rBuckets"></div>
+      <div class="section-label">MCQ detail</div>
+      <div id="rMCQDetail"></div>
+      <div class="section-label">Fill-in detail</div>
+      <div id="rFillDetail"></div>
+      <div class="section-label">Sentence answers (manual review)</div>
+      <div id="rSentences"></div>
+    </div>
+  </div>
+</div>
+
+<!-- TEST MODE -->
+<div id="testMode" style="display:none">
+  <div class="header">
+    <div class="header-inner">
+      <h1>English Practice</h1>
+      <p>Take your time. There are no tricks — just answer what feels right.</p>
+      <span class="pill" id="qCountPill">35 Questions</span>
+    </div>
+  </div>
+  <div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+  <div class="container">
+    <div id="quizBody"></div>
+    <div class="submit-area">
+      <p>Take as long as you need. When you're ready, click below.<br>There is no time limit and no pass or fail.</p>
+      <button class="btn-submit" onclick="submitQuiz()">I'm done — submit answers</button>
+      <div class="warning" id="warningMsg">You may have missed a question or two — but no problem, your answers have been saved!</div>
+    </div>
+    <div class="done-msg" id="doneMsg">
+      <h2>Well done! 🎉</h2>
+      <p>Your answers have been saved to a file.<br>Please send that file to your teacher.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════
+// QUESTION BANK
+// ══════════════════════════════════════
+const PASSAGES = {
+  p1: "My name is Sunita. I am a teacher. I work in a school near my house. I have three children — two boys and one girl. Every morning I drink tea and help my children get ready. On weekends, I like to read books and visit my mother.",
+  p2: "My name is Ramesh. I drive an auto-rickshaw in Chennai. I have been doing this job for ten years. Every day I wake up early and start work at six in the morning. In the evenings, I go for a walk near the beach. I am saving money for my daughter's education. Last month she got a scholarship, and I am very proud of her."
+};
+
+const BANK = [
+  // Subject-verb agreement
+  {id:"sva_001",type:"mcq",level:"a1",bucket:"Subject-verb agreement",stem:"I ___ a teacher.",options:["am","is","are"],answer:"a"},
+  {id:"sva_002",type:"mcq",level:"a1",bucket:"Subject-verb agreement",stem:"She ___ to school every day.",options:["go","goes","going"],answer:"b"},
+  {id:"sva_003",type:"mcq",level:"a1",bucket:"Subject-verb agreement",stem:"They ___ my friends.",options:["is","am","are"],answer:"c"},
+  {id:"sva_004",type:"mcq",level:"a1",bucket:"Subject-verb agreement",stem:"He ___ from Mumbai.",options:["am","is","are"],answer:"b"},
+  {id:"sva_005",type:"mcq",level:"a1",bucket:"Subject-verb agreement",stem:"We ___ happy today.",options:["is","am","are"],answer:"c"},
+  {id:"sva_006",type:"mcq",level:"a1",bucket:"Subject-verb agreement",stem:"The dog ___ very loud.",options:["are","am","is"],answer:"c"},
+  {id:"sva_007",type:"mcq",level:"a1",bucket:"Subject-verb agreement",stem:"___ you from Delhi?",options:["Am","Is","Are"],answer:"c"},
+  {id:"sva_008",type:"mcq",level:"a1",bucket:"Subject-verb agreement",stem:"My mother ___ very well.",options:["cook","cooks","cooking"],answer:"b"},
+  {id:"sva_009",type:"mcq",level:"a1",bucket:"Subject-verb agreement",stem:"What time ___ the train leave?",options:["do","does","are"],answer:"b"},
+  {id:"sva_010",type:"mcq",level:"a1",bucket:"Subject-verb agreement",stem:"There ___ a hospital near my house.",options:["are","am","is"],answer:"c"},
+  {id:"sva_011",type:"mcq",level:"a2",bucket:"Subject-verb agreement",stem:"Neither of them ___ ready.",options:["are","is","were"],answer:"b"},
+  {id:"sva_012",type:"mcq",level:"a2",bucket:"Subject-verb agreement",stem:"The children ___ playing in the park.",options:["is","was","are"],answer:"c"},
+  // Tense - past
+  {id:"tsp_001",type:"mcq",level:"a1",bucket:"Tense (past)",stem:"I ___ to the market yesterday.",options:["go","went","going"],answer:"b"},
+  {id:"tsp_002",type:"mcq",level:"a1",bucket:"Tense (past)",stem:"She ___ a mango this morning.",options:["eat","ate","eating"],answer:"b"},
+  {id:"tsp_003",type:"mcq",level:"a1",bucket:"Tense (past)",stem:"We ___ a film last night.",options:["watch","watched","watching"],answer:"b"},
+  {id:"tsp_004",type:"mcq",level:"a1",bucket:"Tense (past)",stem:"He ___ home at 8 pm.",options:["come","came","coming"],answer:"b"},
+  {id:"tsp_005",type:"mcq",level:"a1",bucket:"Tense (past)",stem:"They ___ very tired after the journey.",options:["are","was","were"],answer:"c"},
+  {id:"tsp_006",type:"mcq",level:"a2",bucket:"Tense (past)",stem:"She ___ not come to the party.",options:["do","did","does"],answer:"b"},
+  {id:"tsp_007",type:"mcq",level:"a2",bucket:"Tense (past)",stem:"I ___ my keys this morning.",options:["lose","lost","losing"],answer:"b"},
+  {id:"tsp_008",type:"mcq",level:"a2",bucket:"Tense (past)",stem:"___ you finish your work yesterday?",options:["Do","Did","Does"],answer:"b"},
+  {id:"tsp_009",type:"fill",level:"a1",bucket:"Tense (past)",stem:"She ___ (be) at home yesterday.",answer:["was"]},
+  {id:"tsp_010",type:"fill",level:"a1",bucket:"Tense (past)",stem:"They ___ (go) to Chennai last week.",answer:["went"]},
+  {id:"tsp_011",type:"fill",level:"a2",bucket:"Tense (past)",stem:"He ___ (not eat) breakfast this morning.",answer:["did not eat","didn't eat"]},
+  {id:"tsp_012",type:"fill",level:"a2",bucket:"Tense (past)",stem:"We ___ (meet) her at the station.",answer:["met"]},
+  {id:"tsp_013",type:"fill",level:"a1",bucket:"Tense (past)",stem:"I ___ (buy) vegetables from the market yesterday.",answer:["bought"]},
+  {id:"tsp_014",type:"fill",level:"a2",bucket:"Tense (past)",stem:"The train ___ (arrive) late last night.",answer:["arrived"]},
+  // Tense - present continuous
+  {id:"tpc_001",type:"mcq",level:"a1",bucket:"Tense (present cont.)",stem:"I am ___ a book right now.",options:["read","reads","reading"],answer:"c"},
+  {id:"tpc_002",type:"mcq",level:"a1",bucket:"Tense (present cont.)",stem:"She ___ watching TV.",options:["am","is","are"],answer:"b"},
+  {id:"tpc_003",type:"mcq",level:"a1",bucket:"Tense (present cont.)",stem:"They ___ playing cricket in the garden.",options:["is","am","are"],answer:"c"},
+  {id:"tpc_004",type:"mcq",level:"a2",bucket:"Tense (present cont.)",stem:"We ___ waiting for the bus.",options:["is","are","am"],answer:"b"},
+  {id:"tpc_005",type:"mcq",level:"a2",bucket:"Tense (present cont.)",stem:"He ___ not coming to dinner tonight.",options:["are","am","is"],answer:"c"},
+  {id:"tpc_006",type:"fill",level:"a1",bucket:"Tense (present cont.)",stem:"She ___ (cook) dinner right now.",answer:["is cooking"]},
+  {id:"tpc_007",type:"fill",level:"a1",bucket:"Tense (present cont.)",stem:"They ___ (wait) outside.",answer:["are waiting"]},
+  {id:"tpc_008",type:"fill",level:"a2",bucket:"Tense (present cont.)",stem:"I ___ (not feel) well today.",answer:["am not feeling"]},
+  {id:"tpc_009",type:"fill",level:"a2",bucket:"Tense (present cont.)",stem:"He ___ (study) for his exam.",answer:["is studying"]},
+  // Tense - simple present
+  {id:"tpr_001",type:"mcq",level:"a1",bucket:"Tense (simple present)",stem:"I ___ tea every morning.",options:["drink","drinks","drinking"],answer:"a"},
+  {id:"tpr_002",type:"mcq",level:"a1",bucket:"Tense (simple present)",stem:"She ___ in Bangalore.",options:["live","lives","living"],answer:"b"},
+  {id:"tpr_003",type:"mcq",level:"a1",bucket:"Tense (simple present)",stem:"They ___ to the temple on Fridays.",options:["go","goes","going"],answer:"a"},
+  {id:"tpr_004",type:"mcq",level:"a1",bucket:"Tense (simple present)",stem:"My father ___ in an office.",options:["work","works","working"],answer:"b"},
+  {id:"tpr_005",type:"mcq",level:"a2",bucket:"Tense (simple present)",stem:"___ she speak any other languages?",options:["Do","Does","Is"],answer:"b"},
+  {id:"tpr_006",type:"mcq",level:"a2",bucket:"Tense (simple present)",stem:"He ___ not like spicy food.",options:["do","does","is"],answer:"b"},
+  {id:"tpr_007",type:"fill",level:"a1",bucket:"Tense (simple present)",stem:"She ___ (have) two brothers.",answer:["has"]},
+  {id:"tpr_008",type:"fill",level:"a1",bucket:"Tense (simple present)",stem:"I ___ (be) happy today.",answer:["am"]},
+  {id:"tpr_009",type:"fill",level:"a2",bucket:"Tense (simple present)",stem:"He ___ (not know) the answer.",answer:["does not know","doesn't know"]},
+  {id:"tpr_010",type:"fill",level:"a2",bucket:"Tense (simple present)",stem:"They ___ (live) near the railway station.",answer:["live"]},
+  // Articles
+  {id:"art_001",type:"mcq",level:"a1",bucket:"Articles (a/an/the)",stem:"I have ___ umbrella.",options:["a","an","the"],answer:"b"},
+  {id:"art_002",type:"mcq",level:"a1",bucket:"Articles (a/an/the)",stem:"She is ___ doctor.",options:["a","an","the"],answer:"b"},
+  {id:"art_003",type:"mcq",level:"a1",bucket:"Articles (a/an/the)",stem:"There is ___ dog outside.",options:["a","an","the"],answer:"a"},
+  {id:"art_004",type:"mcq",level:"a1",bucket:"Articles (a/an/the)",stem:"I want to eat ___ apple.",options:["a","an","the"],answer:"b"},
+  {id:"art_005",type:"mcq",level:"a1",bucket:"Articles (a/an/the)",stem:"___ sun rises in the east.",options:["A","An","The"],answer:"c"},
+  {id:"art_006",type:"mcq",level:"a2",bucket:"Articles (a/an/the)",stem:"She is ___ honest person.",options:["a","an","the"],answer:"b"},
+  {id:"art_007",type:"mcq",level:"a2",bucket:"Articles (a/an/the)",stem:"He is ___ best student in the class.",options:["a","an","the"],answer:"c"},
+  {id:"art_008",type:"mcq",level:"a2",bucket:"Articles (a/an/the)",stem:"I bought ___ new phone yesterday.",options:["a","an","the"],answer:"a"},
+  {id:"art_009",type:"mcq",level:"a2",bucket:"Articles (a/an/the)",stem:"Can you close ___ door please?",options:["a","an","the"],answer:"c"},
+  {id:"art_010",type:"mcq",level:"a2",bucket:"Articles (a/an/the)",stem:"He plays ___ guitar very well.",options:["a","an","the"],answer:"c"},
+  {id:"art_011",type:"mcq",level:"a1",bucket:"Articles (a/an/the)",stem:"I need ___ pen to write.",options:["a","an","the"],answer:"a"},
+  {id:"art_012",type:"mcq",level:"a2",bucket:"Articles (a/an/the)",stem:"___ Ganges is a holy river.",options:["A","An","The"],answer:"c"},
+  // Pronouns
+  {id:"pro_001",type:"mcq",level:"a1",bucket:"Pronouns & possessives",stem:"This is ___ bag.",options:["my","me","I"],answer:"a"},
+  {id:"pro_002",type:"mcq",level:"a1",bucket:"Pronouns & possessives",stem:"This is ___ house. They live here.",options:["their","they","them"],answer:"a"},
+  {id:"pro_003",type:"mcq",level:"a1",bucket:"Pronouns & possessives",stem:"She gave the book to ___.",options:["I","my","me"],answer:"c"},
+  {id:"pro_004",type:"mcq",level:"a1",bucket:"Pronouns & possessives",stem:"That is ___ car. It belongs to him.",options:["him","his","he"],answer:"b"},
+  {id:"pro_005",type:"mcq",level:"a1",bucket:"Pronouns & possessives",stem:"I washed ___ hands before eating.",options:["my","me","mine"],answer:"a"},
+  {id:"pro_006",type:"mcq",level:"a2",bucket:"Pronouns & possessives",stem:"The phone is ___. Nobody else can use it.",options:["her","hers","she"],answer:"b"},
+  {id:"pro_007",type:"mcq",level:"a2",bucket:"Pronouns & possessives",stem:"___ is standing at the door?",options:["Who","Whom","Whose"],answer:"a"},
+  {id:"pro_008",type:"mcq",level:"a1",bucket:"Pronouns & possessives",stem:"Can you help ___?",options:["I","my","me"],answer:"c"},
+  {id:"pro_009",type:"mcq",level:"a2",bucket:"Pronouns & possessives",stem:"___ book is this? Is it yours?",options:["Who","Whom","Whose"],answer:"c"},
+  {id:"pro_010",type:"mcq",level:"a2",bucket:"Pronouns & possessives",stem:"She did all the work by ___.",options:["her","herself","hers"],answer:"b"},
+  {id:"pro_011",type:"mcq",level:"a1",bucket:"Pronouns & possessives",stem:"___ name is Anita.",options:["Her","She","Hers"],answer:"a"},
+  {id:"pro_012",type:"mcq",level:"a1",bucket:"Pronouns & possessives",stem:"We cooked the food ___.",options:["ourself","ourselves","us"],answer:"b"},
+  // Comparatives
+  {id:"cmp_001",type:"mcq",level:"a1",bucket:"Comparatives & superlatives",stem:"She is ___ than her sister.",options:["tall","taller","tallest"],answer:"b"},
+  {id:"cmp_002",type:"mcq",level:"a1",bucket:"Comparatives & superlatives",stem:"This bag is ___ than that one.",options:["heavy","heavier","heaviest"],answer:"b"},
+  {id:"cmp_003",type:"mcq",level:"a1",bucket:"Comparatives & superlatives",stem:"He is the ___ student in the class.",options:["smart","smarter","smartest"],answer:"c"},
+  {id:"cmp_004",type:"mcq",level:"a2",bucket:"Comparatives & superlatives",stem:"Today is ___ than yesterday.",options:["hot","more hot","hotter"],answer:"c"},
+  {id:"cmp_005",type:"mcq",level:"a2",bucket:"Comparatives & superlatives",stem:"This is the ___ film I have ever seen.",options:["good","better","best"],answer:"c"},
+  {id:"cmp_006",type:"mcq",level:"a2",bucket:"Comparatives & superlatives",stem:"She speaks English ___ than I do.",options:["good","better","best"],answer:"b"},
+  {id:"cmp_007",type:"mcq",level:"a1",bucket:"Comparatives & superlatives",stem:"My house is ___ from school than yours.",options:["far","farther","farthest"],answer:"b"},
+  {id:"cmp_008",type:"mcq",level:"a2",bucket:"Comparatives & superlatives",stem:"This exam was ___ than the last one.",options:["difficult","more difficult","most difficult"],answer:"b"},
+  {id:"cmp_009",type:"mcq",level:"a1",bucket:"Comparatives & superlatives",stem:"January is the ___ month of the year.",options:["cold","colder","coldest"],answer:"c"},
+  {id:"cmp_010",type:"mcq",level:"a2",bucket:"Comparatives & superlatives",stem:"He is not as ___ as his brother.",options:["tall","taller","tallest"],answer:"a"},
+  // Modals
+  {id:"mod_001",type:"mcq",level:"a1",bucket:"Modals",stem:"I ___ speak a little English.",options:["can","cans","am able"],answer:"a"},
+  {id:"mod_002",type:"mcq",level:"a1",bucket:"Modals",stem:"She ___ swim very well.",options:["can","is can","able"],answer:"a"},
+  {id:"mod_003",type:"mcq",level:"a1",bucket:"Modals",stem:"You ___ eat in the classroom.",options:["can't","not can","no can"],answer:"a"},
+  {id:"mod_004",type:"mcq",level:"a1",bucket:"Modals",stem:"___ I use your phone?",options:["Can","Cans","Am"],answer:"a"},
+  {id:"mod_005",type:"mcq",level:"a2",bucket:"Modals",stem:"You ___ wear a seatbelt in the car.",options:["must","are must","musting"],answer:"a"},
+  {id:"mod_006",type:"mcq",level:"a2",bucket:"Modals",stem:"She ___ be tired after the long trip.",options:["must","is must","musts"],answer:"a"},
+  {id:"mod_007",type:"mcq",level:"a2",bucket:"Modals",stem:"You ___ smoke here. It is not allowed.",options:["mustn't","don't must","no must"],answer:"a"},
+  {id:"mod_008",type:"mcq",level:"a2",bucket:"Modals",stem:"___ you please help me with this bag?",options:["Could","Coulds","Are"],answer:"a"},
+  {id:"mod_009",type:"mcq",level:"a2",bucket:"Modals",stem:"I ___ like a glass of water, please.",options:["would","will","am"],answer:"a"},
+  {id:"mod_010",type:"mcq",level:"a1",bucket:"Modals",stem:"He ___ ride a bicycle.",options:["can","is","does"],answer:"a"},
+  {id:"mod_011",type:"mcq",level:"a2",bucket:"Modals",stem:"You ___ take an umbrella. It might rain.",options:["should","are should","shoulds"],answer:"a"},
+  {id:"mod_012",type:"mcq",level:"a2",bucket:"Modals",stem:"___ I open the window?",options:["May","Mays","Am"],answer:"a"},
+  // Quantifiers
+  {id:"qnt_001",type:"mcq",level:"a1",bucket:"Quantifiers",stem:"I have ___ friends in this city.",options:["many","much","more"],answer:"a"},
+  {id:"qnt_002",type:"mcq",level:"a1",bucket:"Quantifiers",stem:"There is not ___ water in the bottle.",options:["many","much","more"],answer:"b"},
+  {id:"qnt_003",type:"mcq",level:"a1",bucket:"Quantifiers",stem:"She drinks ___ cups of tea every day.",options:["a few","a little","much"],answer:"a"},
+  {id:"qnt_004",type:"mcq",level:"a2",bucket:"Quantifiers",stem:"I have ___ time left. Please hurry.",options:["little","few","many"],answer:"a"},
+  {id:"qnt_005",type:"mcq",level:"a2",bucket:"Quantifiers",stem:"There are ___ students absent today.",options:["a little","a few","much"],answer:"b"},
+  {id:"qnt_006",type:"mcq",level:"a1",bucket:"Quantifiers",stem:"Do you have ___ money?",options:["some","any","many"],answer:"b"},
+  {id:"qnt_007",type:"mcq",level:"a2",bucket:"Quantifiers",stem:"I bought ___ vegetables from the market.",options:["some","any","many"],answer:"a"},
+  {id:"qnt_008",type:"mcq",level:"a1",bucket:"Quantifiers",stem:"She has ___ brothers and sisters.",options:["no","not","none"],answer:"a"},
+  {id:"qnt_009",type:"mcq",level:"a2",bucket:"Quantifiers",stem:"There is ___ milk left. We need to buy more.",options:["no","not","none"],answer:"a"},
+  {id:"qnt_010",type:"mcq",level:"a2",bucket:"Quantifiers",stem:"___ of the students passed the exam.",options:["Most","Almost","More"],answer:"a"},
+  // Negation
+  {id:"neg_001",type:"mcq",level:"a1",bucket:"Negation",stem:"I ___ like cold weather.",options:["don't","doesn't","isn't"],answer:"a"},
+  {id:"neg_002",type:"mcq",level:"a1",bucket:"Negation",stem:"She ___ eat meat.",options:["don't","doesn't","isn't"],answer:"b"},
+  {id:"neg_003",type:"mcq",level:"a1",bucket:"Negation",stem:"They ___ at home right now.",options:["don't","aren't","isn't"],answer:"b"},
+  {id:"neg_004",type:"mcq",level:"a2",bucket:"Negation",stem:"I ___ finish my work yesterday.",options:["didn't","don't","wasn't"],answer:"a"},
+  {id:"neg_005",type:"mcq",level:"a2",bucket:"Negation",stem:"She ___ been to Kolkata before.",options:["haven't","hasn't","didn't"],answer:"b"},
+  {id:"neg_006",type:"fill",level:"a1",bucket:"Negation",stem:"I ___ (not know) the answer.",answer:["don't know","do not know"]},
+  {id:"neg_007",type:"fill",level:"a2",bucket:"Negation",stem:"She ___ (not finish) her food.",answer:["didn't finish","did not finish"]},
+  {id:"neg_008",type:"mcq",level:"a1",bucket:"Negation",stem:"He ___ speak French.",options:["can't","don't","isn't"],answer:"a"},
+  {id:"neg_009",type:"mcq",level:"a2",bucket:"Negation",stem:"We ___ going to the market today.",options:["don't","aren't","isn't"],answer:"b"},
+  {id:"neg_010",type:"fill",level:"a2",bucket:"Negation",stem:"He ___ (not be) happy about the news.",answer:["was not","wasn't"]},
+  // Prepositions
+  {id:"prep_001",type:"mcq",level:"a1",bucket:"Prepositions",stem:"The book is ___ the table.",options:["on","in","at"],answer:"a"},
+  {id:"prep_002",type:"mcq",level:"a1",bucket:"Prepositions",stem:"She lives ___ Chennai.",options:["on","in","at"],answer:"b"},
+  {id:"prep_003",type:"mcq",level:"a1",bucket:"Prepositions",stem:"I wake up ___ 6 o'clock.",options:["on","in","at"],answer:"c"},
+  {id:"prep_004",type:"mcq",level:"a1",bucket:"Prepositions",stem:"My birthday is ___ March.",options:["on","in","at"],answer:"b"},
+  {id:"prep_005",type:"mcq",level:"a1",bucket:"Prepositions",stem:"The cat is sleeping ___ the chair.",options:["under","in","at"],answer:"a"},
+  {id:"prep_006",type:"mcq",level:"a2",bucket:"Prepositions",stem:"I will meet you ___ Monday morning.",options:["in","at","on"],answer:"c"},
+  {id:"prep_007",type:"mcq",level:"a2",bucket:"Prepositions",stem:"She has been working here ___ five years.",options:["since","for","from"],answer:"b"},
+  {id:"prep_008",type:"mcq",level:"a2",bucket:"Prepositions",stem:"I have known her ___ childhood.",options:["for","since","from"],answer:"b"},
+  {id:"prep_009",type:"mcq",level:"a1",bucket:"Prepositions",stem:"He is waiting ___ the bus stop.",options:["on","in","at"],answer:"c"},
+  {id:"prep_010",type:"mcq",level:"a2",bucket:"Prepositions",stem:"She travelled ___ train to Hyderabad.",options:["with","by","on"],answer:"b"},
+  {id:"prep_011",type:"mcq",level:"a1",bucket:"Prepositions",stem:"There is a picture ___ the wall.",options:["on","in","at"],answer:"a"},
+  {id:"prep_012",type:"mcq",level:"a2",bucket:"Prepositions",stem:"The shop is ___ the post office and the bank.",options:["next to","between","near to"],answer:"b"},
+  // Sentence construction
+  {id:"sen_001",type:"sentence",level:"a1",bucket:"Sentence construction",stem:"Write a sentence using: I / going / school",answer:[]},
+  {id:"sen_002",type:"sentence",level:"a1",bucket:"Sentence construction",stem:"Write a sentence using: she / eats / morning",answer:[]},
+  {id:"sen_003",type:"sentence",level:"a1",bucket:"Sentence construction",stem:"Write a sentence using: they / played / yesterday",answer:[]},
+  {id:"sen_004",type:"sentence",level:"a1",bucket:"Sentence construction",stem:"Write a sentence using: he / watching / now",answer:[]},
+  {id:"sen_005",type:"sentence",level:"a1",bucket:"Sentence construction",stem:"Write a sentence using: we / went / market",answer:[]},
+  {id:"sen_006",type:"sentence",level:"a2",bucket:"Sentence construction",stem:"Write a sentence using: she / has never / visited",answer:[]},
+  {id:"sen_007",type:"sentence",level:"a2",bucket:"Sentence construction",stem:"Write a sentence using: I / should / doctor",answer:[]},
+  {id:"sen_008",type:"sentence",level:"a2",bucket:"Sentence construction",stem:"Write a sentence using: they / are / taller than",answer:[]},
+  {id:"sen_009",type:"sentence",level:"a2",bucket:"Sentence construction",stem:"Write a sentence using: he / forgot / bring",answer:[]},
+  {id:"sen_010",type:"sentence",level:"a2",bucket:"Sentence construction",stem:"Write a sentence using: we / used to / live",answer:[]},
+  // Reading comprehension — passage p1 (A1)
+  {id:"rc1_001",type:"mcq",level:"a1",bucket:"Reading comprehension",passage:"p1",stem:"What is Sunita's job?",options:["Teacher","Nurse","Doctor"],answer:"a"},
+  {id:"rc1_002",type:"mcq",level:"a1",bucket:"Reading comprehension",passage:"p1",stem:"Where does Sunita work?",options:["A hospital","A school","A market"],answer:"b"},
+  {id:"rc1_003",type:"mcq",level:"a1",bucket:"Reading comprehension",passage:"p1",stem:"How many children does Sunita have?",options:["One","Two","Three"],answer:"c"},
+  {id:"rc1_004",type:"mcq",level:"a1",bucket:"Reading comprehension",passage:"p1",stem:"What does Sunita like to do on weekends?",options:["Cook","Read books","Go for walks"],answer:"b"},
+  {id:"rc1_005",type:"mcq",level:"a1",bucket:"Reading comprehension",passage:"p1",stem:"What does Sunita drink every morning?",options:["Coffee","Tea","Juice"],answer:"b"},
+  // Reading comprehension — passage p2 (A2)
+  {id:"rc2_001",type:"mcq",level:"a2",bucket:"Reading comprehension",passage:"p2",stem:"What does Ramesh do for work?",options:["He is a farmer","He drives an auto","He works in a shop"],answer:"b"},
+  {id:"rc2_002",type:"mcq",level:"a2",bucket:"Reading comprehension",passage:"p2",stem:"How long has Ramesh been doing this job?",options:["Two years","Five years","Ten years"],answer:"c"},
+  {id:"rc2_003",type:"mcq",level:"a2",bucket:"Reading comprehension",passage:"p2",stem:"What is Ramesh saving money for?",options:["A new house","His daughter's education","A new auto"],answer:"b"},
+  {id:"rc2_004",type:"mcq",level:"a2",bucket:"Reading comprehension",passage:"p2",stem:"What does Ramesh do every evening?",options:["He watches TV","He reads the newspaper","He goes for a walk"],answer:"c"},
+  {id:"rc2_005",type:"mcq",level:"a2",bucket:"Reading comprehension",passage:"p2",stem:"Why does Ramesh feel proud?",options:["His son passed an exam","His daughter got a scholarship","He bought a new auto"],answer:"b"},
+];
+
+// Bucket weights for weighted-random draw
+const BUCKET_WEIGHTS = {
+  "Subject-verb agreement":     3,
+  "Tense (past)":               3,
+  "Tense (present cont.)":      2,
+  "Tense (simple present)":     2,
+  "Articles (a/an/the)":        2,
+  "Pronouns & possessives":     2,
+  "Comparatives & superlatives":2,
+  "Modals":                     2,
+  "Quantifiers":                2,
+  "Negation":                   2,
+  "Prepositions":               2,
+  "Sentence construction":      2,
+  "Reading comprehension":      5,
+};
+
+// ══════════════════════════════════════
+// PACK / UNPACK
+// ══════════════════════════════════════
+function pack(obj) {
+  const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(obj))));
+  const rev = b64.split("").reverse().join("");
+  let out = "";
+  for (let i = 0; i < rev.length; i++) {
+    out += rev[i];
+    if (i % 7 === 6) out += String.fromCharCode(65 + (i % 26));
+  }
+  return "GG1:" + out;
+}
+function unpack(str) {
+  if (!str.startsWith("GG1:")) throw new Error("Invalid file");
+  let encoded = str.slice(4), clean = "";
+  for (let i = 0; i < encoded.length; i++) { if (i % 8 !== 7) clean += encoded[i]; }
+  return JSON.parse(decodeURIComponent(escape(atob(clean.split("").reverse().join("")))));
+}
+
+// ══════════════════════════════════════
+// DRAW ENGINE
+// ══════════════════════════════════════
+let drawnQuestions = [];
+let testStartTime = 0;
+let questionFirstAnswer = {};
+let questionFirstSeen = {};
+
+function drawQuestions() {
+  // Group bank by bucket
+  const byBucket = {};
+  BANK.forEach(q => {
+    if (!byBucket[q.bucket]) byBucket[q.bucket] = [];
+    byBucket[q.bucket].push(q);
+  });
+
+  // Always include exactly one passage per reading sitting (p1 or p2, not mixed)
+  // Pick a passage at random, pull all 5 questions from it
+  const passageChoice = Math.random() < 0.5 ? "p1" : "p2";
+  const readingQs = (byBucket["Reading comprehension"] || []).filter(q => q.passage === passageChoice);
+
+  // For all other buckets, do weighted random draw
+  // Total target: 35. Reading = 5. Remaining = 30 from other buckets.
+  const otherBuckets = Object.keys(BUCKET_WEIGHTS).filter(b => b !== "Reading comprehension");
+  const totalWeight = otherBuckets.reduce((s, b) => s + (BUCKET_WEIGHTS[b] || 1), 0);
+
+  // Guarantee at least 2 sentence construction questions
+  let draw = [];
+  const sentencePool = shuffle([...(byBucket["Sentence construction"] || [])]);
+  draw.push(...sentencePool.slice(0, 2));
+  const usedIds = new Set(draw.map(q => q.id));
+
+  // Fill remaining 28 slots from weighted buckets (excluding sentence which we already seeded)
+  const remaining = 28;
+  const nonSentenceBuckets = otherBuckets.filter(b => b !== "Sentence construction");
+  const nsWeight = nonSentenceBuckets.reduce((s, b) => s + (BUCKET_WEIGHTS[b] || 1), 0);
+
+  nonSentenceBuckets.forEach(bucket => {
+    const pool = shuffle([...(byBucket[bucket] || [])]);
+    const quota = Math.max(1, Math.round((BUCKET_WEIGHTS[bucket] / nsWeight) * remaining));
+    let added = 0;
+    for (const q of pool) {
+      if (added >= quota) break;
+      if (!usedIds.has(q.id)) { draw.push(q); usedIds.add(q.id); added++; }
+    }
+  });
+
+  // Trim/pad to exactly 30 non-reading questions
+  draw = draw.slice(0, 30);
+
+  // Combine with reading and shuffle within sections
+  const allDraw = [...shuffle(draw), ...readingQs];
+  return allDraw;
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+// ══════════════════════════════════════
+// TEST MODE
+// ══════════════════════════════════════
+const MODE = new URLSearchParams(window.location.search).get("mode") || "test";
+
+function initTest() {
+  testStartTime = Date.now();
+  questionFirstAnswer = {};
+  questionFirstSeen = {};
+  drawnQuestions = drawQuestions();
+  document.getElementById("testMode").style.display = "block";
+  document.getElementById("qCountPill").textContent = drawnQuestions.length + " Questions";
+  renderQuiz();
+}
+
+function renderQuiz() {
+  const body = document.getElementById("quizBody");
+  body.innerHTML = "";
+
+  // Group into sections for display
+  const sections = [
+    { label: "Part 1 — Choose the correct word or phrase", types: ["mcq"], excludeBuckets: ["Reading comprehension"] },
+    { label: "Part 2 — Fill in the blank", types: ["fill"], excludeBuckets: [] },
+    { label: "Part 3 — Make a sentence", types: ["sentence"], excludeBuckets: [] },
+    { label: "Part 4 — Read and answer", types: ["mcq"], includeBuckets: ["Reading comprehension"] },
+  ];
+
+  let qNum = 1;
+  let lastPassage = null;
+
+  sections.forEach(section => {
+    let sectionQs = drawnQuestions.filter(q => {
+      const typeMatch = section.types.includes(q.type);
+      const bucketMatch = section.includeBuckets
+        ? section.includeBuckets.includes(q.bucket)
+        : !section.excludeBuckets.includes(q.bucket);
+      return typeMatch && bucketMatch;
+    });
+    if (!sectionQs.length) return;
+
+    const labelEl = document.createElement("div");
+    labelEl.className = "section-label-test";
+    labelEl.textContent = section.label;
+    body.appendChild(labelEl);
+
+    sectionQs.forEach(q => {
+      // Show passage box if needed (reading comprehension)
+      if (q.passage && q.passage !== lastPassage) {
+        const pb = document.createElement("div");
+        pb.className = "passage-box";
+        pb.innerHTML = "📖 " + PASSAGES[q.passage];
+        body.appendChild(pb);
+        lastPassage = q.passage;
+      }
+
+      const wrap = document.createElement("div");
+      wrap.className = "question";
+      wrap.id = "wrap-" + q.id;
+
+      // Stem with ___ replaced by visible underline blank
+      const stemDisplay = q.stem.replace(/___/g, '<span style="display:inline-block;min-width:72px;height:1.2em;border-bottom:2px solid #1a1a18;margin:0 4px 0 2px;vertical-align:middle;"></span>');
+
+      if (q.type === "mcq") {
+        wrap.innerHTML = `
+          <div class="q-stem">
+            <span class="q-num">${qNum}.</span>
+            <span class="q-text">${stemDisplay}</span>
+          </div>
+          <div class="options">
+            <label class="option-label"><input type="radio" name="${q.id}" value="a"><span class="radio-dot"></span> ${q.options[0]}</label>
+            <label class="option-label"><input type="radio" name="${q.id}" value="b"><span class="radio-dot"></span> ${q.options[1]}</label>
+            <label class="option-label"><input type="radio" name="${q.id}" value="c"><span class="radio-dot"></span> ${q.options[2]}</label>
+          </div>`;
+      } else if (q.type === "fill") {
+        wrap.innerHTML = `
+          <div class="q-stem">
+            <span class="q-num">${qNum}.</span>
+            <span class="q-text">${stemDisplay}</span>
+          </div>
+          <div class="text-answer">
+            <input type="text" name="${q.id}" placeholder="write your answer…"
+              autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false">
+          </div>`;
+      } else {
+        wrap.innerHTML = `
+          <div class="q-stem">
+            <span class="q-num">${qNum}.</span>
+            <span class="q-text">${q.stem}</span>
+          </div>
+          <div class="text-answer">
+            <input type="text" name="${q.id}" placeholder="write a sentence…"
+              autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false">
+            <div class="text-hint">Use all the words. You can add extra words.</div>
+          </div>`;
+      }
+
+      body.appendChild(wrap);
+      qNum++;
+    });
+  });
+
+  // Track when each question first scrolls into view
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id.replace("wrap-", "");
+        if (id && !questionFirstSeen[id]) {
+          questionFirstSeen[id] = Date.now() - testStartTime;
+        }
+      }
+    });
+  }, { threshold: 0.5 }); // at least half the card visible
+
+  document.querySelectorAll('.question[id^="wrap-"]').forEach(el => observer.observe(el));
+
+  // Attach progress listeners
+  document.querySelectorAll('input[type="radio"]').forEach(r => {
+    r.addEventListener("change", function() {
+      if (!questionFirstAnswer[this.name]) questionFirstAnswer[this.name] = Date.now() - testStartTime;
+      document.getElementById("wrap-" + this.name)?.classList.add("answered");
+      updateProgress();
+    });
+  });
+  document.querySelectorAll('input[type="text"]').forEach(t => {
+    t.addEventListener("input", function() {
+      if (this.value.trim() && !questionFirstAnswer[this.name]) questionFirstAnswer[this.name] = Date.now() - testStartTime;
+      const card = document.getElementById("wrap-" + this.name);
+      if (card) card.classList.toggle("answered", !!this.value.trim());
+      updateProgress();
+    });
+  });
+}
+
+function updateProgress() {
+  let answered = 0;
+  drawnQuestions.forEach(q => {
+    if (q.type === "mcq") {
+      if (document.querySelector(`[name="${q.id}"]:checked`)) answered++;
+    } else {
+      if (document.querySelector(`[name="${q.id}"]`)?.value.trim()) answered++;
+    }
+  });
+  document.getElementById("progressBar").style.width = Math.round((answered / drawnQuestions.length) * 100) + "%";
+}
+
+function submitQuiz() {
+  // Check for missing
+  let missing = 0;
+  drawnQuestions.forEach(q => {
+    if (q.type === "mcq" && !document.querySelector(`[name="${q.id}"]:checked`)) missing++;
+    else if (q.type !== "mcq" && !document.querySelector(`[name="${q.id}"]`)?.value.trim()) missing++;
+  });
+  document.getElementById("warningMsg").classList.toggle("show", missing > 0);
+
+  // Score
+  const detail = {};
+  let mcqScore = 0, mcqTotal = 0, fillScore = 0, fillTotal = 0, readingScore = 0;
+  const sentenceDetail = {};
+  const bucketMap = {}; // bucket -> {correct,wrong,skipped,total}
+
+  drawnQuestions.forEach(q => {
+    if (!bucketMap[q.bucket]) bucketMap[q.bucket] = { correct:0, wrong:0, skipped:0, total:0 };
+    bucketMap[q.bucket].total++;
+
+    if (q.type === "mcq") {
+      mcqTotal++;
+      const checked = document.querySelector(`[name="${q.id}"]:checked`);
+      const given = checked ? checked.value : null;
+      const skipped = !given;
+      const pass = given === q.answer;
+      if (pass) { mcqScore++; bucketMap[q.bucket].correct++; }
+      else if (skipped) bucketMap[q.bucket].skipped++;
+      else bucketMap[q.bucket].wrong++;
+      if (q.bucket === "Reading comprehension" && pass) readingScore++;
+      detail[q.id] = { type:"mcq", stem:q.stem, options:q.options, given:given||"", correct:q.answer, pass, skipped, bucket:q.bucket, level:q.level };
+
+    } else if (q.type === "fill") {
+      fillTotal++;
+      const val = (document.querySelector(`[name="${q.id}"]`)?.value || "").toLowerCase().trim();
+      const skipped = val === "";
+      const pass = q.answer.includes(val) || q.answer.some(a => a.startsWith(val + " "));
+      if (pass) { fillScore++; bucketMap[q.bucket].correct++; }
+      else if (skipped) bucketMap[q.bucket].skipped++;
+      else bucketMap[q.bucket].wrong++;
+      detail[q.id] = { type:"fill", stem:q.stem, given:val, accepted:q.answer, pass, skipped, bucket:q.bucket, level:q.level };
+
+    } else {
+      const val = (document.querySelector(`[name="${q.id}"]`)?.value || "").trim();
+      const skipped = val === "";
+      if (skipped) bucketMap[q.bucket].skipped++;
+      // sentences are manual review — don't affect score
+      bucketMap[q.bucket].total--; // don't count in total
+      sentenceDetail[q.id] = { stem:q.stem, given:val };
+    }
+  });
+
+  const autoTotal = mcqTotal + fillTotal;
+  const autoScore = mcqScore + fillScore;
+  const pct = autoTotal > 0 ? Math.round((autoScore / autoTotal) * 100) : 0;
+
+  let band;
+  if (pct >= 85) band = "Solid A2 — ready for Phase 2";
+  else if (pct >= 65) band = "Mid A2 — on track, some gaps to fill";
+  else if (pct >= 45) band = "A1–A2 boundary — foundation work needed";
+  else band = "A1 — start from basics";
+
+  const payload = {
+    pct, band, mcqScore, mcqTotal, fillScore, fillTotal, readingScore,
+    bucketResults: bucketMap, detail, sentenceDetail,
+    timing: {
+      totalMs: Date.now() - testStartTime,
+      firstAnswerMs: questionFirstAnswer,
+      firstSeenMs: questionFirstSeen
+    },
+    ts: new Date().toISOString()
+  };
+
+  // Download
+  const packed = pack(payload);
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([packed], {type:"text/plain"}));
+  a.download = "results-" + new Date().toISOString().slice(0,10) + ".gauge";
+  a.click();
+
+  document.getElementById("doneMsg").classList.add("show");
+  document.querySelector(".submit-area").style.display = "none";
+  window.scrollTo({top: document.body.scrollHeight, behavior:"smooth"});
+}
+
+// ══════════════════════════════════════
+// EVAL MODE
+// ══════════════════════════════════════
+function initEval() {
+  document.getElementById("evalMode").style.display = "block";
+  const fi = document.getElementById("fileInput");
+  fi.addEventListener("change", e => {
+    const f = e.target.files[0]; if (!f) return;
+    const r = new FileReader();
+    r.onload = ev => renderResults(ev.target.result.trim());
+    r.readAsText(f);
+  });
+  const zone = document.querySelector(".upload-zone");
+  zone.addEventListener("dragover", e => { e.preventDefault(); zone.style.borderColor="var(--accent)"; });
+  zone.addEventListener("dragleave", () => { zone.style.borderColor=""; });
+  zone.addEventListener("drop", e => {
+    e.preventDefault(); zone.style.borderColor="";
+    const f = e.dataTransfer.files[0]; if (!f) return;
+    const r = new FileReader();
+    r.onload = ev => renderResults(ev.target.result.trim());
+    r.readAsText(f);
+  });
+}
+
+function renderResults(raw) {
+  let data;
+  try { data = unpack(raw); }
+  catch(e) { alert("Could not read this file. Make sure it's a valid .gauge file."); return; }
+
+  document.getElementById("rBand").textContent = data.band;
+  document.getElementById("rPct").textContent = data.pct + "% auto-graded · " + new Date(data.ts).toLocaleDateString("en-IN");
+  document.getElementById("rOverall").textContent = (data.mcqScore + data.fillScore) + " / " + (data.mcqTotal + data.fillTotal);
+  document.getElementById("rMCQ").textContent = data.mcqScore + " / " + data.mcqTotal;
+  document.getElementById("rFill").textContent = data.fillScore + " / " + data.fillTotal;
+  document.getElementById("rReading").textContent = (data.readingScore || 0) + " / 5";
+
+  // Timing
+  const timingEl = document.getElementById("rTiming");
+  timingEl.innerHTML = "";
+  if (data.timing) {
+    const totalMin = Math.floor(data.timing.totalMs / 60000);
+    const totalSec = Math.floor((data.timing.totalMs % 60000) / 1000);
+    timingEl.innerHTML += `<div class="bucket-row" style="margin-bottom:16px"><span>⏱️ Total time on test</span><span class="score">${totalMin}m ${totalSec}s</span></div>`;
+
+    const fa = data.timing.firstAnswerMs || {};
+    const fs = data.timing.firstSeenMs || {};
+
+    // Compute dwell time per question (time from first seen to first answer)
+    // Only meaningful if we have firstSeenMs — old files won't
+    const hasSeen = Object.keys(fs).length > 0;
+
+    if (hasSeen) {
+      // Questions seen but never answered
+      const seenUnanswered = Object.keys(fs).filter(id => !fa[id] && data.detail[id]);
+      if (seenUnanswered.length) {
+        timingEl.innerHTML += `<div style="font-size:.82rem;color:var(--ink-light);margin-bottom:10px">Seen but not answered — she scrolled past without attempting:</div>`;
+        seenUnanswered.forEach(id => {
+          const d = data.detail[id];
+          timingEl.innerHTML += `<div class="mcq-row fail"><div class="q-label">⏭️ "${d.stem}"</div></div>`;
+        });
+      }
+
+      // Dwell time: answered questions sorted by time spent before answering
+      const dwells = Object.keys(fa)
+        .filter(id => fs[id] !== undefined)
+        .map(id => ({ id, dwell: fa[id] - fs[id] }))
+        .filter(x => x.dwell > 0)
+        .sort((a, b) => b.dwell - a.dwell);
+
+      if (dwells.length) {
+        timingEl.innerHTML += `<div style="font-size:.82rem;color:var(--ink-light);margin:16px 0 10px">Longest hesitation before answering (top 5):</div>`;
+        dwells.slice(0, 5).forEach(item => {
+          const d = data.detail[item.id];
+          if (!d) return;
+          const secs = Math.round(item.dwell / 1000);
+          const mins = Math.floor(secs / 60);
+          const s = secs % 60;
+          const timeStr = mins > 0 ? `${mins}m ${s}s` : `${s}s`;
+          const cls = d.pass ? "pass" : "fail";
+          const marker = d.pass ? "✅" : "❌";
+          timingEl.innerHTML += `<div class="mcq-row ${cls}">
+            <div class="q-label">${marker} "${d.stem}"</div>
+            <div class="q-detail">Thought for ${timeStr} before answering${d.pass ? " — got it right" : " — still got it wrong"}</div>
+          </div>`;
+        });
+      }
+    } else {
+      // Fallback for old files without firstSeenMs
+      timingEl.innerHTML += `<div style="font-size:.82rem;color:var(--ink-light);padding:4px 0">Detailed per-question timing not available in this file.</div>`;
+    }
+  } else {
+    timingEl.innerHTML = `<div style="font-size:.88rem;color:var(--ink-light);padding:8px 0">No timing data in this file.</div>`;
+  }
+
+  // Buckets
+  const bucketsEl = document.getElementById("rBuckets");
+  bucketsEl.innerHTML = "";
+  for (const topic in data.bucketResults) {
+    const b = data.bucketResults[topic];
+    const correct = b.correct||0, wrong = b.wrong||0, skipped = b.skipped||0, total = b.total||0;
+    if (total === 0) continue;
+    const allCorrect = correct === total;
+    const cls = allCorrect ? "pass" : wrong > 0 ? "fail" : "warn";
+    const emoji = allCorrect ? "✅" : wrong > 0 ? "❌" : "⏭️";
+    const sub = allCorrect ? "" : ` <span style="font-size:.78rem;opacity:.65">(${correct} correct · ${wrong} wrong · ${skipped} skipped)</span>`;
+    bucketsEl.innerHTML += `<div class="bucket-row ${cls}"><span>${emoji} ${topic}${sub}</span><span class="score">${correct}/${total}</span></div>`;
+  }
+
+  // Question detail
+  const mcqEl = document.getElementById("rMCQDetail");
+  const fillEl = document.getElementById("rFillDetail");
+  mcqEl.innerHTML = ""; fillEl.innerHTML = "";
+
+  for (const id in data.detail) {
+    const d = data.detail[id];
+    if (d.type === "mcq") {
+      let cls, marker, detail;
+      if (d.pass) { cls="pass"; marker="✅"; detail=""; }
+      else if (d.skipped) { cls="fail"; marker="⏭️"; detail=` — <em>not attempted</em> (correct: <strong>${d.correct}</strong>)`; }
+      else { cls="fail"; marker="❌"; detail=` — gave: <strong>${d.options[["a","b","c"].indexOf(d.given)]||d.given}</strong>, correct: <strong>${d.options[["a","b","c"].indexOf(d.correct)]}</strong>`; }
+      mcqEl.innerHTML += `<div class="mcq-row ${cls}"><div class="q-label">${marker} "${d.stem}"</div>${detail?'<div class="q-detail">'+detail+'</div>':''}</div>`;
+    } else {
+      let cls, marker, detail;
+      if (d.pass) { cls="pass"; marker="✅"; detail=`gave: "${d.given}"`; }
+      else if (d.skipped) { cls="fail"; marker="⏭️"; detail=`<em>not attempted</em> — accepted: ${d.accepted.join(" / ")}`; }
+      else { cls="fail"; marker="❌"; detail=`gave: "<strong>${d.given}</strong>" — accepted: ${d.accepted.join(" / ")}`; }
+      fillEl.innerHTML += `<div class="fill-row ${cls}">${marker} "${d.stem}": ${detail}</div>`;
+    }
+  }
+
+  // Sentences
+  const sentEl = document.getElementById("rSentences");
+  sentEl.innerHTML = "";
+  for (const id in data.sentenceDetail) {
+    const s = data.sentenceDetail[id];
+    const empty = !s.given?.trim();
+    sentEl.innerHTML += `<div class="sentence-row"><div class="q-id">Prompt: ${s.stem}</div><div class="q-text ${empty?"empty":""}">${empty?"(no answer)":s.given}</div></div>`;
+  }
+
+  document.getElementById("resultsPanel").classList.add("show");
+  document.getElementById("resultsPanel").scrollIntoView({behavior:"smooth"});
+}
+
+// ══════════════════════════════════════
+// BOOT
+// ══════════════════════════════════════
+document.addEventListener("DOMContentLoaded", function() {
+  if (MODE === "eval") initEval();
+  else initTest();
+});
+</script>
+</body>
+</html>
