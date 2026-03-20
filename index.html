@@ -19,294 +19,210 @@
     --number: #c84b2f;
     --shadow: 0 2px 12px rgba(0,0,0,0.07);
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); font-family: 'DM Sans', sans-serif; font-weight: 300; color: var(--ink); min-height: 100vh; padding: 0 0 80px; }
 
-  body {
-    background: var(--bg);
-    font-family: 'DM Sans', sans-serif;
-    font-weight: 300;
-    color: var(--ink);
-    min-height: 100vh;
-    padding: 0 0 80px;
-  }
-
-  /* Header */
-  .header {
-    background: var(--ink);
-    color: #fff;
-    padding: 48px 40px 36px;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-  }
-  .header::before {
-    content: '';
-    position: absolute;
-    top: -40px; left: -40px; right: -40px; bottom: -40px;
-    background: repeating-linear-gradient(
-      45deg,
-      transparent,
-      transparent 20px,
-      rgba(255,255,255,0.02) 20px,
-      rgba(255,255,255,0.02) 21px
-    );
-  }
-  .header-inner { position: relative; z-index: 1; }
-  .header h1 {
-    font-family: 'Lora', serif;
-    font-size: 2.2rem;
-    font-weight: 600;
-    letter-spacing: -0.02em;
-    margin-bottom: 8px;
-  }
-  .header p {
-    font-size: 0.95rem;
-    opacity: 0.65;
-    font-weight: 300;
-    letter-spacing: 0.03em;
-  }
-  .pill {
-    display: inline-block;
-    margin-top: 16px;
-    background: var(--accent);
-    color: #fff;
-    font-size: 0.75rem;
-    font-weight: 500;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    padding: 5px 14px;
-    border-radius: 20px;
-  }
-
-  /* Progress bar */
-  .progress-bar-wrap {
-    background: var(--rule);
-    height: 4px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-  .progress-bar {
-    height: 100%;
-    background: var(--accent);
-    width: 0%;
-    transition: width 0.3s ease;
-  }
-
-  /* Container */
-  .container {
-    max-width: 740px;
-    margin: 0 auto;
-    padding: 40px 24px;
-  }
-
-  /* Section headers */
-  .section-label {
-    font-family: 'Lora', serif;
-    font-size: 0.78rem;
-    font-weight: 600;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--accent);
-    border-bottom: 1px solid var(--rule);
-    padding-bottom: 10px;
-    margin: 48px 0 28px;
-  }
-  .section-label:first-of-type { margin-top: 0; }
-
-  /* Question card */
-  .question {
+  /* ── EVAL MODE ── */
+  .eval-wrap { max-width: 740px; margin: 0 auto; padding: 60px 24px; }
+  .eval-header { text-align: center; margin-bottom: 48px; }
+  .eval-header h1 { font-family: 'Lora', serif; font-size: 2rem; margin-bottom: 8px; }
+  .eval-header p { color: var(--ink-light); font-size: 0.95rem; }
+  .upload-zone {
+    border: 2px dashed var(--rule); border-radius: 12px; padding: 48px 24px;
+    text-align: center; cursor: pointer; transition: border-color 0.2s, background 0.2s;
     background: var(--paper);
-    border: 1px solid var(--rule);
-    border-radius: 10px;
-    padding: 22px 26px;
-    margin-bottom: 14px;
-    box-shadow: var(--shadow);
-    transition: border-color 0.2s;
   }
+  .upload-zone:hover { border-color: var(--accent); background: var(--accent-soft); }
+  .upload-zone p { color: var(--ink-light); font-size: 0.95rem; margin-top: 8px; }
+  .upload-zone .icon { font-size: 2.5rem; margin-bottom: 8px; }
+  #fileInput { display: none; }
+
+  .results-panel { display: none; margin-top: 40px; }
+  .results-panel.show { display: block; }
+
+  .summary-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 14px; margin-bottom: 32px;
+  }
+  .stat-card {
+    background: var(--paper); border: 1px solid var(--rule); border-radius: 10px;
+    padding: 18px; text-align: center; box-shadow: var(--shadow);
+  }
+  .stat-card .val { font-family: 'Lora', serif; font-size: 1.8rem; font-weight: 600; color: var(--accent); }
+  .stat-card .lbl { font-size: 0.75rem; color: var(--ink-light); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.08em; }
+  .band-card {
+    background: var(--ink); color: #fff; border-radius: 10px; padding: 20px 24px;
+    margin-bottom: 32px; text-align: center;
+  }
+  .band-card .band-val { font-family: 'Lora', serif; font-size: 1.3rem; margin-bottom: 4px; }
+  .band-card .band-sub { font-size: 0.85rem; opacity: 0.6; }
+
+  .section-label {
+    font-family: 'Lora', serif; font-size: 0.78rem; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent);
+    border-bottom: 1px solid var(--rule); padding-bottom: 10px; margin: 32px 0 18px;
+  }
+  .bucket-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 14px; background: var(--paper); border: 1px solid var(--rule);
+    border-radius: 8px; margin-bottom: 8px; font-size: 0.9rem;
+  }
+  .bucket-row .score { font-weight: 500; font-family: 'Lora', serif; }
+  .bucket-row.pass { border-left: 3px solid var(--correct); }
+  .bucket-row.warn { border-left: 3px solid #e6a817; }
+  .bucket-row.fail { border-left: 3px solid var(--accent); }
+
+  .mcq-row { padding: 8px 14px; font-size: 0.88rem; border-radius: 6px; margin-bottom: 6px; }
+  .mcq-row.pass { background: var(--correct-soft); color: var(--correct); }
+  .mcq-row.fail { background: #fdecea; color: #a0291a; }
+  .mcq-row .q-label { font-weight: 500; }
+  .mcq-row .q-detail { opacity: 0.75; font-size: 0.82rem; margin-top: 2px; }
+
+  .fill-row { padding: 8px 14px; font-size: 0.88rem; border-radius: 6px; margin-bottom: 6px; }
+  .fill-row.pass { background: var(--correct-soft); color: var(--correct); }
+  .fill-row.fail { background: #fdecea; color: #a0291a; }
+
+  .sentence-row { padding: 10px 14px; background: var(--paper); border: 1px solid var(--rule); border-radius: 8px; margin-bottom: 8px; font-size: 0.9rem; }
+  .sentence-row .q-id { font-weight: 500; color: var(--accent); margin-bottom: 4px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; }
+  .sentence-row .q-text { font-style: italic; color: var(--ink-light); }
+  .sentence-row .q-text.empty { color: #ccc; }
+
+  /* ── TEST MODE ── */
+  .header { background: var(--ink); color: #fff; padding: 48px 40px 36px; text-align: center; position: relative; overflow: hidden; }
+  .header::before { content: ''; position: absolute; top: -40px; left: -40px; right: -40px; bottom: -40px; background: repeating-linear-gradient(45deg, transparent, transparent 20px, rgba(255,255,255,0.02) 20px, rgba(255,255,255,0.02) 21px); }
+  .header-inner { position: relative; z-index: 1; }
+  .header h1 { font-family: 'Lora', serif; font-size: 2.2rem; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 8px; }
+  .header p { font-size: 0.95rem; opacity: 0.65; font-weight: 300; letter-spacing: 0.03em; }
+  .pill { display: inline-block; margin-top: 16px; background: var(--accent); color: #fff; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; padding: 5px 14px; border-radius: 20px; }
+
+  .progress-bar-wrap { background: var(--rule); height: 4px; position: sticky; top: 0; z-index: 100; }
+  .progress-bar { height: 100%; background: var(--accent); width: 0%; transition: width 0.3s ease; }
+
+  .container { max-width: 740px; margin: 0 auto; padding: 40px 24px; }
+
+  .section-label-test { font-family: 'Lora', serif; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); border-bottom: 1px solid var(--rule); padding-bottom: 10px; margin: 48px 0 28px; }
+  .section-label-test:first-of-type { margin-top: 0; }
+
+  .question { background: var(--paper); border: 1px solid var(--rule); border-radius: 10px; padding: 22px 26px; margin-bottom: 14px; box-shadow: var(--shadow); transition: border-color 0.2s; }
   .question:hover { border-color: #d8d4cc; }
   .question.answered { border-left: 3px solid var(--accent); }
+  .q-stem { display: flex; gap: 14px; align-items: baseline; margin-bottom: 16px; }
+  .q-num { font-family: 'Lora', serif; font-size: 0.8rem; font-weight: 600; color: var(--number); min-width: 22px; padding-top: 1px; }
+  .q-text { font-size: 1rem; line-height: 1.55; font-weight: 400; color: var(--ink); }
+  .blank { display: inline-block; width: 70px; border-bottom: 2px solid var(--ink); margin: 0 4px; vertical-align: bottom; }
 
-  .q-stem {
-    display: flex;
-    gap: 14px;
-    align-items: baseline;
-    margin-bottom: 16px;
-  }
-  .q-num {
-    font-family: 'Lora', serif;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--number);
-    min-width: 22px;
-    padding-top: 1px;
-  }
-  .q-text {
-    font-size: 1rem;
-    line-height: 1.55;
-    font-weight: 400;
-    color: var(--ink);
-  }
-  .blank {
-    display: inline-block;
-    width: 70px;
-    border-bottom: 2px solid var(--ink);
-    margin: 0 4px;
-    vertical-align: bottom;
-  }
-
-  /* Radio options */
-  .options {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    padding-left: 36px;
-  }
-  .option-label {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    cursor: pointer;
-    padding: 8px 12px;
-    border-radius: 7px;
-    border: 1px solid transparent;
-    transition: background 0.15s, border-color 0.15s;
-    font-size: 0.95rem;
-    color: var(--ink-light);
-  }
-  .option-label:hover {
-    background: var(--accent-soft);
-    border-color: #e8c4bc;
-    color: var(--ink);
-  }
+  .options { display: flex; flex-direction: column; gap: 8px; padding-left: 36px; }
+  .option-label { display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 8px 12px; border-radius: 7px; border: 1px solid transparent; transition: background 0.15s, border-color 0.15s; font-size: 0.95rem; color: var(--ink-light); }
+  .option-label:hover { background: var(--accent-soft); border-color: #e8c4bc; color: var(--ink); }
   .option-label input[type="radio"] { display: none; }
-  .radio-dot {
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    border: 2px solid #ccc;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: border-color 0.15s;
-  }
-  .option-label input:checked + .radio-dot {
-    border-color: var(--accent);
-    background: var(--accent);
-  }
-  .option-label input:checked + .radio-dot::after {
-    content: '';
-    width: 6px;
-    height: 6px;
-    background: #fff;
-    border-radius: 50%;
-  }
-  .option-label:has(input:checked) {
-    background: var(--accent-soft);
-    border-color: #e0b0a4;
-    color: var(--ink);
-    font-weight: 500;
-  }
+  .radio-dot { width: 18px; height: 18px; border-radius: 50%; border: 2px solid #ccc; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: border-color 0.15s; }
+  .option-label input:checked + .radio-dot { border-color: var(--accent); background: var(--accent); }
+  .option-label input:checked + .radio-dot::after { content: ''; width: 6px; height: 6px; background: #fff; border-radius: 50%; }
+  .option-label:has(input:checked) { background: var(--accent-soft); border-color: #e0b0a4; color: var(--ink); font-weight: 500; }
 
-  /* Text input */
-  .text-answer {
-    margin-left: 36px;
-    margin-top: 4px;
-  }
-  .text-answer input[type="text"] {
-    width: 100%;
-    max-width: 320px;
-    border: none;
-    border-bottom: 2px solid var(--rule);
-    background: transparent;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.95rem;
-    color: var(--ink);
-    padding: 6px 4px;
-    outline: none;
-    transition: border-color 0.2s;
-  }
+  .text-answer { margin-left: 36px; margin-top: 4px; }
+  .text-answer input[type="text"] { width: 100%; max-width: 320px; border: none; border-bottom: 2px solid var(--rule); background: transparent; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; color: var(--ink); padding: 6px 4px; outline: none; transition: border-color 0.2s; }
   .text-answer input:focus { border-bottom-color: var(--accent); }
-  .text-hint {
-    font-size: 0.78rem;
-    color: var(--ink-light);
-    margin-top: 4px;
-    font-style: italic;
-  }
+  .text-hint { font-size: 0.78rem; color: var(--ink-light); margin-top: 4px; font-style: italic; }
 
-  /* Submit area */
-  .submit-area {
-    margin-top: 52px;
-    text-align: center;
-    padding: 40px 24px;
-    background: var(--paper);
-    border: 1px solid var(--rule);
-    border-radius: 12px;
-    box-shadow: var(--shadow);
-  }
-  .submit-area p {
-    font-size: 0.9rem;
-    color: var(--ink-light);
-    margin-bottom: 24px;
-    line-height: 1.6;
-  }
-  .btn-submit {
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    padding: 14px 44px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 1rem;
-    font-weight: 500;
-    border-radius: 8px;
-    cursor: pointer;
-    letter-spacing: 0.02em;
-    transition: background 0.2s, transform 0.1s;
-    box-shadow: 0 4px 16px rgba(200,75,47,0.25);
-  }
+  .submit-area { margin-top: 52px; text-align: center; padding: 40px 24px; background: var(--paper); border: 1px solid var(--rule); border-radius: 12px; box-shadow: var(--shadow); }
+  .submit-area p { font-size: 0.9rem; color: var(--ink-light); margin-bottom: 24px; line-height: 1.6; }
+  .btn-submit { background: var(--accent); color: #fff; border: none; padding: 14px 44px; font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 500; border-radius: 8px; cursor: pointer; letter-spacing: 0.02em; transition: background 0.2s, transform 0.1s; box-shadow: 0 4px 16px rgba(200,75,47,0.25); }
   .btn-submit:hover { background: #b03d24; transform: translateY(-1px); }
   .btn-submit:active { transform: translateY(0); }
 
-  /* Done state */
-  .done-msg {
-    display: none;
-    text-align: center;
-    padding: 48px 24px;
-    background: var(--correct-soft);
-    border: 1px solid #b7dcc9;
-    border-radius: 12px;
-    margin-top: 40px;
-  }
+  .done-msg { display: none; text-align: center; padding: 48px 24px; background: var(--correct-soft); border: 1px solid #b7dcc9; border-radius: 12px; margin-top: 40px; }
   .done-msg.show { display: block; }
-  .done-msg h2 {
-    font-family: 'Lora', serif;
-    font-size: 1.6rem;
-    color: var(--correct);
-    margin-bottom: 10px;
-  }
-  .done-msg p {
-    color: var(--ink-light);
-    font-size: 0.95rem;
-    line-height: 1.7;
-  }
+  .done-msg h2 { font-family: 'Lora', serif; font-size: 1.6rem; color: var(--correct); margin-bottom: 10px; }
+  .done-msg p { color: var(--ink-light); font-size: 0.95rem; line-height: 1.7; }
 
-  /* Unanswered warning */
-  .warning {
-    background: #fff8e6;
-    border: 1px solid #f0d98a;
-    border-radius: 8px;
-    padding: 12px 18px;
-    font-size: 0.88rem;
-    color: #7a5a00;
-    margin-top: 16px;
-    display: none;
-  }
+  .warning { background: #fff8e6; border: 1px solid #f0d98a; border-radius: 8px; padding: 12px 18px; font-size: 0.88rem; color: #7a5a00; margin-top: 16px; display: none; }
   .warning.show { display: block; }
+
+  .btn-eval { display: inline-block; margin-top: 20px; background: transparent; border: 2px solid var(--correct); color: var(--correct); padding: 10px 28px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: background 0.15s; text-decoration: none; }
+  .btn-eval:hover { background: var(--correct-soft); }
 </style>
 </head>
 <body>
+
+<script>
+// ── Obfuscation (simple, not encryption — just makes it unreadable) ──
+function pack(obj) {
+  const json = JSON.stringify(obj);
+  const b64 = btoa(unescape(encodeURIComponent(json)));
+  // reverse + intersperse noise chars
+  const rev = b64.split("").reverse().join("");
+  let out = "";
+  for (let i = 0; i < rev.length; i++) {
+    out += rev[i];
+    if (i % 7 === 6) out += String.fromCharCode(65 + (i % 26));
+  }
+  return "GG1:" + out;
+}
+
+function unpack(str) {
+  if (!str.startsWith("GG1:")) throw new Error("Invalid file");
+  let encoded = str.slice(4);
+  let clean = "";
+  for (let i = 0; i < encoded.length; i++) {
+    if (i % 8 !== 7) clean += encoded[i];
+  }
+  const rev = clean.split("").reverse().join("");
+  return JSON.parse(decodeURIComponent(escape(atob(rev))));
+}
+</script>
+
+<!-- ═══════════════════════════════════════════
+     EVAL MODE
+════════════════════════════════════════════ -->
+<div id="evalMode" style="display:none">
+  <div class="eval-wrap">
+    <div class="eval-header">
+      <h1 style="font-family:'Lora',serif">Results Evaluator</h1>
+      <p>Upload the .gauge file to see the full breakdown.</p>
+    </div>
+
+    <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
+      <div class="icon">📂</div>
+      <strong>Click to upload a .gauge file</strong>
+      <p>Or drag and drop it here</p>
+    </div>
+    <input type="file" id="fileInput" accept=".gauge">
+
+    <div class="results-panel" id="resultsPanel">
+
+      <div class="band-card">
+        <div class="band-val" id="rBand">—</div>
+        <div class="band-sub" id="rPct">—</div>
+      </div>
+
+      <div class="summary-grid">
+        <div class="stat-card"><div class="val" id="rOverall">—</div><div class="lbl">Overall</div></div>
+        <div class="stat-card"><div class="val" id="rMCQ">—</div><div class="lbl">MCQ</div></div>
+        <div class="stat-card"><div class="val" id="rFill">—</div><div class="lbl">Fill-in</div></div>
+        <div class="stat-card"><div class="val" id="rReading">—</div><div class="lbl">Reading</div></div>
+      </div>
+
+      <div class="section-label">Topic breakdown</div>
+      <div id="rBuckets"></div>
+
+      <div class="section-label">MCQ detail</div>
+      <div id="rMCQDetail"></div>
+
+      <div class="section-label">Fill-in detail</div>
+      <div id="rFillDetail"></div>
+
+      <div class="section-label">Sentence answers (manual review)</div>
+      <div id="rSentences"></div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     TEST MODE
+════════════════════════════════════════════ -->
+<div id="testMode" style="display:none">
 
 <div class="header">
   <div class="header-inner">
@@ -322,523 +238,163 @@
 
 <div class="container">
 
-  <!-- SECTION 1 -->
-  <div class="section-label">Part 1 — Choose the correct word</div>
+  <div class="section-label-test">Part 1 — Choose the correct word</div>
 
-  <!-- Q1 -->
-  <div class="question" id="wrap-q1">
-    <div class="q-stem">
-      <span class="q-num">1.</span>
-      <span class="q-text">I <span class="blank"></span> a student.</span>
-    </div>
-    <div class="options">
-      <label class="option-label"><input type="radio" name="q1" value="a"><span class="radio-dot"></span> am</label>
-      <label class="option-label"><input type="radio" name="q1" value="b"><span class="radio-dot"></span> is</label>
-      <label class="option-label"><input type="radio" name="q1" value="c"><span class="radio-dot"></span> are</label>
-    </div>
-  </div>
+  <div class="question" id="wrap-q1"><div class="q-stem"><span class="q-num">1.</span><span class="q-text">I <span class="blank"></span> a student.</span></div><div class="options"><label class="option-label"><input type="radio" name="q1" value="a"><span class="radio-dot"></span> am</label><label class="option-label"><input type="radio" name="q1" value="b"><span class="radio-dot"></span> is</label><label class="option-label"><input type="radio" name="q1" value="c"><span class="radio-dot"></span> are</label></div></div>
 
-  <!-- Q2 -->
-  <div class="question" id="wrap-q2">
-    <div class="q-stem">
-      <span class="q-num">2.</span>
-      <span class="q-text">She <span class="blank"></span> to work every day.</span>
-    </div>
-    <div class="options">
-      <label class="option-label"><input type="radio" name="q2" value="a"><span class="radio-dot"></span> go</label>
-      <label class="option-label"><input type="radio" name="q2" value="b"><span class="radio-dot"></span> goes</label>
-      <label class="option-label"><input type="radio" name="q2" value="c"><span class="radio-dot"></span> going</label>
-    </div>
-  </div>
+  <div class="question" id="wrap-q2"><div class="q-stem"><span class="q-num">2.</span><span class="q-text">She <span class="blank"></span> to work every day.</span></div><div class="options"><label class="option-label"><input type="radio" name="q2" value="a"><span class="radio-dot"></span> go</label><label class="option-label"><input type="radio" name="q2" value="b"><span class="radio-dot"></span> goes</label><label class="option-label"><input type="radio" name="q2" value="c"><span class="radio-dot"></span> going</label></div></div>
 
-  <!-- Q3 -->
-  <div class="question" id="wrap-q3">
-    <div class="q-stem">
-      <span class="q-num">3.</span>
-      <span class="q-text">They <span class="blank"></span> watching TV right now.</span>
-    </div>
-    <div class="options">
-      <label class="option-label"><input type="radio" name="q3" value="a"><span class="radio-dot"></span> is</label>
-      <label class="option-label"><input type="radio" name="q3" value="b"><span class="radio-dot"></span> are</label>
-      <label class="option-label"><input type="radio" name="q3" value="c"><span class="radio-dot"></span> am</label>
-    </div>
-  </div>
+  <div class="question" id="wrap-q3"><div class="q-stem"><span class="q-num">3.</span><span class="q-text">They <span class="blank"></span> watching TV right now.</span></div><div class="options"><label class="option-label"><input type="radio" name="q3" value="a"><span class="radio-dot"></span> is</label><label class="option-label"><input type="radio" name="q3" value="b"><span class="radio-dot"></span> are</label><label class="option-label"><input type="radio" name="q3" value="c"><span class="radio-dot"></span> am</label></div></div>
 
-  <!-- Q4 -->
-  <div class="question" id="wrap-q4">
-    <div class="q-stem">
-      <span class="q-num">4.</span>
-      <span class="q-text">I have <span class="blank"></span> umbrella.</span>
-    </div>
-    <div class="options">
-      <label class="option-label"><input type="radio" name="q4" value="a"><span class="radio-dot"></span> a</label>
-      <label class="option-label"><input type="radio" name="q4" value="b"><span class="radio-dot"></span> an</label>
-      <label class="option-label"><input type="radio" name="q4" value="c"><span class="radio-dot"></span> the</label>
-    </div>
-  </div>
+  <div class="question" id="wrap-q4"><div class="q-stem"><span class="q-num">4.</span><span class="q-text">I have <span class="blank"></span> umbrella.</span></div><div class="options"><label class="option-label"><input type="radio" name="q4" value="a"><span class="radio-dot"></span> a</label><label class="option-label"><input type="radio" name="q4" value="b"><span class="radio-dot"></span> an</label><label class="option-label"><input type="radio" name="q4" value="c"><span class="radio-dot"></span> the</label></div></div>
 
-  <!-- Q5 -->
-  <div class="question" id="wrap-q5">
-    <div class="q-stem">
-      <span class="q-num">5.</span>
-      <span class="q-text">He <span class="blank"></span> from Delhi.</span>
-    </div>
-    <div class="options">
-      <label class="option-label"><input type="radio" name="q5" value="a"><span class="radio-dot"></span> am</label>
-      <label class="option-label"><input type="radio" name="q5" value="b"><span class="radio-dot"></span> is</label>
-      <label class="option-label"><input type="radio" name="q5" value="c"><span class="radio-dot"></span> are</label>
-    </div>
-  </div>
+  <div class="question" id="wrap-q5"><div class="q-stem"><span class="q-num">5.</span><span class="q-text">He <span class="blank"></span> from Delhi.</span></div><div class="options"><label class="option-label"><input type="radio" name="q5" value="a"><span class="radio-dot"></span> am</label><label class="option-label"><input type="radio" name="q5" value="b"><span class="radio-dot"></span> is</label><label class="option-label"><input type="radio" name="q5" value="c"><span class="radio-dot"></span> are</label></div></div>
 
-  <!-- Q6 -->
-  <div class="question" id="wrap-q6">
-    <div class="q-stem">
-      <span class="q-num">6.</span>
-      <span class="q-text"><span class="blank"></span> you like tea?</span>
-    </div>
-    <div class="options">
-      <label class="option-label"><input type="radio" name="q6" value="a"><span class="radio-dot"></span> Do</label>
-      <label class="option-label"><input type="radio" name="q6" value="b"><span class="radio-dot"></span> Does</label>
-      <label class="option-label"><input type="radio" name="q6" value="c"><span class="radio-dot"></span> Are</label>
-    </div>
-  </div>
+  <div class="question" id="wrap-q6"><div class="q-stem"><span class="q-num">6.</span><span class="q-text"><span class="blank"></span> you like tea?</span></div><div class="options"><label class="option-label"><input type="radio" name="q6" value="a"><span class="radio-dot"></span> Do</label><label class="option-label"><input type="radio" name="q6" value="b"><span class="radio-dot"></span> Does</label><label class="option-label"><input type="radio" name="q6" value="c"><span class="radio-dot"></span> Are</label></div></div>
 
-  <!-- Q7 -->
-  <div class="question" id="wrap-q7">
-    <div class="q-stem">
-      <span class="q-num">7.</span>
-      <span class="q-text">This is <span class="blank"></span> bag.</span>
-    </div>
-    <div class="options">
-      <label class="option-label"><input type="radio" name="q7" value="a"><span class="radio-dot"></span> my</label>
-      <label class="option-label"><input type="radio" name="q7" value="b"><span class="radio-dot"></span> me</label>
-      <label class="option-label"><input type="radio" name="q7" value="c"><span class="radio-dot"></span> I</label>
-    </div>
-  </div>
+  <div class="question" id="wrap-q7"><div class="q-stem"><span class="q-num">7.</span><span class="q-text">This is <span class="blank"></span> bag.</span></div><div class="options"><label class="option-label"><input type="radio" name="q7" value="a"><span class="radio-dot"></span> my</label><label class="option-label"><input type="radio" name="q7" value="b"><span class="radio-dot"></span> me</label><label class="option-label"><input type="radio" name="q7" value="c"><span class="radio-dot"></span> I</label></div></div>
 
-  <!-- Q8 -->
-  <div class="question" id="wrap-q8">
-    <div class="q-stem">
-      <span class="q-num">8.</span>
-      <span class="q-text">I <span class="blank"></span> to the market yesterday.</span>
-    </div>
-    <div class="options">
-      <label class="option-label"><input type="radio" name="q8" value="a"><span class="radio-dot"></span> go</label>
-      <label class="option-label"><input type="radio" name="q8" value="b"><span class="radio-dot"></span> went</label>
-      <label class="option-label"><input type="radio" name="q8" value="c"><span class="radio-dot"></span> going</label>
-    </div>
-  </div>
+  <div class="question" id="wrap-q8"><div class="q-stem"><span class="q-num">8.</span><span class="q-text">I <span class="blank"></span> to the market yesterday.</span></div><div class="options"><label class="option-label"><input type="radio" name="q8" value="a"><span class="radio-dot"></span> go</label><label class="option-label"><input type="radio" name="q8" value="b"><span class="radio-dot"></span> went</label><label class="option-label"><input type="radio" name="q8" value="c"><span class="radio-dot"></span> going</label></div></div>
 
-  <!-- Q9 -->
-  <div class="question" id="wrap-q9">
-    <div class="q-stem">
-      <span class="q-num">9.</span>
-      <span class="q-text">She is <span class="blank"></span> than her sister.</span>
-    </div>
-    <div class="options">
-      <label class="option-label"><input type="radio" name="q9" value="a"><span class="radio-dot"></span> tall</label>
-      <label class="option-label"><input type="radio" name="q9" value="b"><span class="radio-dot"></span> taller</label>
-      <label class="option-label"><input type="radio" name="q9" value="c"><span class="radio-dot"></span> tallest</label>
-    </div>
-  </div>
+  <div class="question" id="wrap-q9"><div class="q-stem"><span class="q-num">9.</span><span class="q-text">She is <span class="blank"></span> than her sister.</span></div><div class="options"><label class="option-label"><input type="radio" name="q9" value="a"><span class="radio-dot"></span> tall</label><label class="option-label"><input type="radio" name="q9" value="b"><span class="radio-dot"></span> taller</label><label class="option-label"><input type="radio" name="q9" value="c"><span class="radio-dot"></span> tallest</label></div></div>
 
-  <!-- Q10 -->
-  <div class="question" id="wrap-q10">
-    <div class="q-stem">
-      <span class="q-num">10.</span>
-      <span class="q-text">There <span class="blank"></span> three chairs in the room.</span>
-    </div>
-    <div class="options">
-      <label class="option-label"><input type="radio" name="q10" value="a"><span class="radio-dot"></span> is</label>
-      <label class="option-label"><input type="radio" name="q10" value="b"><span class="radio-dot"></span> are</label>
-      <label class="option-label"><input type="radio" name="q10" value="c"><span class="radio-dot"></span> am</label>
-    </div>
-  </div>
+  <div class="question" id="wrap-q10"><div class="q-stem"><span class="q-num">10.</span><span class="q-text">There <span class="blank"></span> three chairs in the room.</span></div><div class="options"><label class="option-label"><input type="radio" name="q10" value="a"><span class="radio-dot"></span> is</label><label class="option-label"><input type="radio" name="q10" value="b"><span class="radio-dot"></span> are</label><label class="option-label"><input type="radio" name="q10" value="c"><span class="radio-dot"></span> am</label></div></div>
 
-  <!-- Q11 -->
-  <div class="question" id="wrap-q11">
-    <div class="q-stem">
-      <span class="q-num">11.</span>
-      <span class="q-text">What time <span class="blank"></span> it?</span>
-    </div>
-    <div class="options">
-      <label class="option-label"><input type="radio" name="q11" value="a"><span class="radio-dot"></span> is</label>
-      <label class="option-label"><input type="radio" name="q11" value="b"><span class="radio-dot"></span> are</label>
-      <label class="option-label"><input type="radio" name="q11" value="c"><span class="radio-dot"></span> was</label>
-    </div>
-  </div>
+  <div class="question" id="wrap-q11"><div class="q-stem"><span class="q-num">11.</span><span class="q-text">What time <span class="blank"></span> it?</span></div><div class="options"><label class="option-label"><input type="radio" name="q11" value="a"><span class="radio-dot"></span> is</label><label class="option-label"><input type="radio" name="q11" value="b"><span class="radio-dot"></span> are</label><label class="option-label"><input type="radio" name="q11" value="c"><span class="radio-dot"></span> was</label></div></div>
 
-  <!-- Q12 -->
-  <div class="question" id="wrap-q12">
-    <div class="q-stem">
-      <span class="q-num">12.</span>
-      <span class="q-text">I don't <span class="blank"></span> spicy food.</span>
-    </div>
-    <div class="options">
-      <label class="option-label"><input type="radio" name="q12" value="a"><span class="radio-dot"></span> like</label>
-      <label class="option-label"><input type="radio" name="q12" value="b"><span class="radio-dot"></span> likes</label>
-      <label class="option-label"><input type="radio" name="q12" value="c"><span class="radio-dot"></span> liked</label>
-    </div>
-  </div>
+  <div class="question" id="wrap-q12"><div class="q-stem"><span class="q-num">12.</span><span class="q-text">I don't <span class="blank"></span> spicy food.</span></div><div class="options"><label class="option-label"><input type="radio" name="q12" value="a"><span class="radio-dot"></span> like</label><label class="option-label"><input type="radio" name="q12" value="b"><span class="radio-dot"></span> likes</label><label class="option-label"><input type="radio" name="q12" value="c"><span class="radio-dot"></span> liked</label></div></div>
 
-  <!-- Q13 -->
-  <div class="question" id="wrap-q13">
-    <div class="q-stem">
-      <span class="q-num">13.</span>
-      <span class="q-text">I can <span class="blank"></span> a little English.</span>
-    </div>
-    <div class="options">
-      <label class="option-label"><input type="radio" name="q13" value="a"><span class="radio-dot"></span> speak</label>
-      <label class="option-label"><input type="radio" name="q13" value="b"><span class="radio-dot"></span> speaks</label>
-      <label class="option-label"><input type="radio" name="q13" value="c"><span class="radio-dot"></span> speaking</label>
-    </div>
-  </div>
+  <div class="question" id="wrap-q13"><div class="q-stem"><span class="q-num">13.</span><span class="q-text">I can <span class="blank"></span> a little English.</span></div><div class="options"><label class="option-label"><input type="radio" name="q13" value="a"><span class="radio-dot"></span> speak</label><label class="option-label"><input type="radio" name="q13" value="b"><span class="radio-dot"></span> speaks</label><label class="option-label"><input type="radio" name="q13" value="c"><span class="radio-dot"></span> speaking</label></div></div>
 
-  <!-- Q14 -->
-  <div class="question" id="wrap-q14">
-    <div class="q-stem">
-      <span class="q-num">14.</span>
-      <span class="q-text">This is <span class="blank"></span> house.</span>
-    </div>
-    <div class="options">
-      <label class="option-label"><input type="radio" name="q14" value="a"><span class="radio-dot"></span> their</label>
-      <label class="option-label"><input type="radio" name="q14" value="b"><span class="radio-dot"></span> they</label>
-      <label class="option-label"><input type="radio" name="q14" value="c"><span class="radio-dot"></span> them</label>
-    </div>
-  </div>
+  <div class="question" id="wrap-q14"><div class="q-stem"><span class="q-num">14.</span><span class="q-text">This is <span class="blank"></span> house.</span></div><div class="options"><label class="option-label"><input type="radio" name="q14" value="a"><span class="radio-dot"></span> their</label><label class="option-label"><input type="radio" name="q14" value="b"><span class="radio-dot"></span> they</label><label class="option-label"><input type="radio" name="q14" value="c"><span class="radio-dot"></span> them</label></div></div>
 
-  <!-- Q15 -->
-  <div class="question" id="wrap-q15">
-    <div class="q-stem">
-      <span class="q-num">15.</span>
-      <span class="q-text">I have <span class="blank"></span> friends here.</span>
-    </div>
-    <div class="options">
-      <label class="option-label"><input type="radio" name="q15" value="a"><span class="radio-dot"></span> many</label>
-      <label class="option-label"><input type="radio" name="q15" value="b"><span class="radio-dot"></span> much</label>
-      <label class="option-label"><input type="radio" name="q15" value="c"><span class="radio-dot"></span> more</label>
-    </div>
-  </div>
+  <div class="question" id="wrap-q15"><div class="q-stem"><span class="q-num">15.</span><span class="q-text">I have <span class="blank"></span> friends here.</span></div><div class="options"><label class="option-label"><input type="radio" name="q15" value="a"><span class="radio-dot"></span> many</label><label class="option-label"><input type="radio" name="q15" value="b"><span class="radio-dot"></span> much</label><label class="option-label"><input type="radio" name="q15" value="c"><span class="radio-dot"></span> more</label></div></div>
 
-  <!-- Q16 -->
-  <div class="question" id="wrap-q16">
-    <div class="q-stem">
-      <span class="q-num">16.</span>
-      <span class="q-text">She <span class="blank"></span> not like coffee.</span>
-    </div>
-    <div class="options">
-      <label class="option-label"><input type="radio" name="q16" value="a"><span class="radio-dot"></span> do</label>
-      <label class="option-label"><input type="radio" name="q16" value="b"><span class="radio-dot"></span> does</label>
-      <label class="option-label"><input type="radio" name="q16" value="c"><span class="radio-dot"></span> is</label>
-    </div>
-  </div>
+  <div class="question" id="wrap-q16"><div class="q-stem"><span class="q-num">16.</span><span class="q-text">She <span class="blank"></span> not like coffee.</span></div><div class="options"><label class="option-label"><input type="radio" name="q16" value="a"><span class="radio-dot"></span> do</label><label class="option-label"><input type="radio" name="q16" value="b"><span class="radio-dot"></span> does</label><label class="option-label"><input type="radio" name="q16" value="c"><span class="radio-dot"></span> is</label></div></div>
 
-  <!-- Q17 -->
-  <div class="question" id="wrap-q17">
-    <div class="q-stem">
-      <span class="q-num">17.</span>
-      <span class="q-text">I am <span class="blank"></span> a book now.</span>
-    </div>
-    <div class="options">
-      <label class="option-label"><input type="radio" name="q17" value="a"><span class="radio-dot"></span> read</label>
-      <label class="option-label"><input type="radio" name="q17" value="b"><span class="radio-dot"></span> reading</label>
-      <label class="option-label"><input type="radio" name="q17" value="c"><span class="radio-dot"></span> reads</label>
-    </div>
-  </div>
+  <div class="question" id="wrap-q17"><div class="q-stem"><span class="q-num">17.</span><span class="q-text">I am <span class="blank"></span> a book now.</span></div><div class="options"><label class="option-label"><input type="radio" name="q17" value="a"><span class="radio-dot"></span> read</label><label class="option-label"><input type="radio" name="q17" value="b"><span class="radio-dot"></span> reading</label><label class="option-label"><input type="radio" name="q17" value="c"><span class="radio-dot"></span> reads</label></div></div>
 
-  <!-- Q18 -->
-  <div class="question" id="wrap-q18">
-    <div class="q-stem">
-      <span class="q-num">18.</span>
-      <span class="q-text">Where <span class="blank"></span> you live?</span>
-    </div>
-    <div class="options">
-      <label class="option-label"><input type="radio" name="q18" value="a"><span class="radio-dot"></span> do</label>
-      <label class="option-label"><input type="radio" name="q18" value="b"><span class="radio-dot"></span> does</label>
-      <label class="option-label"><input type="radio" name="q18" value="c"><span class="radio-dot"></span> are</label>
-    </div>
-  </div>
+  <div class="question" id="wrap-q18"><div class="q-stem"><span class="q-num">18.</span><span class="q-text">Where <span class="blank"></span> you live?</span></div><div class="options"><label class="option-label"><input type="radio" name="q18" value="a"><span class="radio-dot"></span> do</label><label class="option-label"><input type="radio" name="q18" value="b"><span class="radio-dot"></span> does</label><label class="option-label"><input type="radio" name="q18" value="c"><span class="radio-dot"></span> are</label></div></div>
 
-  <!-- Q19 -->
-  <div class="question" id="wrap-q19">
-    <div class="q-stem">
-      <span class="q-num">19.</span>
-      <span class="q-text">We <span class="blank"></span> dinner at 8 o'clock last night.</span>
-    </div>
-    <div class="options">
-      <label class="option-label"><input type="radio" name="q19" value="a"><span class="radio-dot"></span> eat</label>
-      <label class="option-label"><input type="radio" name="q19" value="b"><span class="radio-dot"></span> ate</label>
-      <label class="option-label"><input type="radio" name="q19" value="c"><span class="radio-dot"></span> eating</label>
-    </div>
-  </div>
+  <div class="question" id="wrap-q19"><div class="q-stem"><span class="q-num">19.</span><span class="q-text">We <span class="blank"></span> dinner at 8 o'clock last night.</span></div><div class="options"><label class="option-label"><input type="radio" name="q19" value="a"><span class="radio-dot"></span> eat</label><label class="option-label"><input type="radio" name="q19" value="b"><span class="radio-dot"></span> ate</label><label class="option-label"><input type="radio" name="q19" value="c"><span class="radio-dot"></span> eating</label></div></div>
 
-  <!-- Q20 -->
-  <div class="question" id="wrap-q20">
-    <div class="q-stem">
-      <span class="q-num">20.</span>
-      <span class="q-text">The weather <span class="blank"></span> very hot today.</span>
-    </div>
-    <div class="options">
-      <label class="option-label"><input type="radio" name="q20" value="a"><span class="radio-dot"></span> are</label>
-      <label class="option-label"><input type="radio" name="q20" value="b"><span class="radio-dot"></span> is</label>
-      <label class="option-label"><input type="radio" name="q20" value="c"><span class="radio-dot"></span> am</label>
-    </div>
-  </div>
+  <div class="question" id="wrap-q20"><div class="q-stem"><span class="q-num">20.</span><span class="q-text">The weather <span class="blank"></span> very hot today.</span></div><div class="options"><label class="option-label"><input type="radio" name="q20" value="a"><span class="radio-dot"></span> are</label><label class="option-label"><input type="radio" name="q20" value="b"><span class="radio-dot"></span> is</label><label class="option-label"><input type="radio" name="q20" value="c"><span class="radio-dot"></span> am</label></div></div>
 
-  <!-- SECTION 2 -->
-  <div class="section-label">Part 2 — Fill in the blank (write the correct form)</div>
+  <div class="section-label-test">Part 2 — Fill in the blank (write the correct form)</div>
 
-  <!-- Q21 -->
-  <div class="question" id="wrap-q21">
-    <div class="q-stem">
-      <span class="q-num">21.</span>
-      <span class="q-text">I <span class="blank"></span> (be) very tired today.</span>
-    </div>
-    <div class="text-answer">
-      <input type="text" name="q21" placeholder="write your answer…" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false">
-      <div class="text-hint">Write the correct form of the verb in brackets.</div>
-    </div>
-  </div>
+  <div class="question" id="wrap-q21"><div class="q-stem"><span class="q-num">21.</span><span class="q-text">I <span class="blank"></span> (be) very tired today.</span></div><div class="text-answer"><input type="text" name="q21" placeholder="write your answer…" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false"><div class="text-hint">Write the correct form of the verb in brackets.</div></div></div>
 
-  <!-- Q22 -->
-  <div class="question" id="wrap-q22">
-    <div class="q-stem">
-      <span class="q-num">22.</span>
-      <span class="q-text">She <span class="blank"></span> (have) a new phone.</span>
-    </div>
-    <div class="text-answer">
-      <input type="text" name="q22" placeholder="write your answer…" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false">
-    </div>
-  </div>
+  <div class="question" id="wrap-q22"><div class="q-stem"><span class="q-num">22.</span><span class="q-text">She <span class="blank"></span> (have) a new phone.</span></div><div class="text-answer"><input type="text" name="q22" placeholder="write your answer…" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false"></div></div>
 
-  <!-- Q23 -->
-  <div class="question" id="wrap-q23">
-    <div class="q-stem">
-      <span class="q-num">23.</span>
-      <span class="q-text">They <span class="blank"></span> (go) to the park every Sunday.</span>
-    </div>
-    <div class="text-answer">
-      <input type="text" name="q23" placeholder="write your answer…" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false">
-    </div>
-  </div>
+  <div class="question" id="wrap-q23"><div class="q-stem"><span class="q-num">23.</span><span class="q-text">They <span class="blank"></span> (go) to the park every Sunday.</span></div><div class="text-answer"><input type="text" name="q23" placeholder="write your answer…" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false"></div></div>
 
-  <!-- Q24 -->
-  <div class="question" id="wrap-q24">
-    <div class="q-stem">
-      <span class="q-num">24.</span>
-      <span class="q-text">We <span class="blank"></span> (eat) lunch right now.</span>
-    </div>
-    <div class="text-answer">
-      <input type="text" name="q24" placeholder="write your answer…" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false">
-      <div class="text-hint">Hint: present continuous — "are ___ing"</div>
-    </div>
-  </div>
+  <div class="question" id="wrap-q24"><div class="q-stem"><span class="q-num">24.</span><span class="q-text">We <span class="blank"></span> (eat) lunch right now.</span></div><div class="text-answer"><input type="text" name="q24" placeholder="write your answer…" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false"><div class="text-hint">Hint: present continuous — "are ___ing"</div></div></div>
 
-  <!-- Q25 -->
-  <div class="question" id="wrap-q25">
-    <div class="q-stem">
-      <span class="q-num">25.</span>
-      <span class="q-text">He <span class="blank"></span> (live) in Mumbai.</span>
-    </div>
-    <div class="text-answer">
-      <input type="text" name="q25" placeholder="write your answer…" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false">
-    </div>
-  </div>
+  <div class="question" id="wrap-q25"><div class="q-stem"><span class="q-num">25.</span><span class="q-text">He <span class="blank"></span> (live) in Mumbai.</span></div><div class="text-answer"><input type="text" name="q25" placeholder="write your answer…" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false"></div></div>
 
-  <!-- Q26 -->
-  <div class="question" id="wrap-q26">
-    <div class="q-stem">
-      <span class="q-num">26.</span>
-      <span class="q-text">I <span class="blank"></span> (not know) the answer.</span>
-    </div>
-    <div class="text-answer">
-      <input type="text" name="q26" placeholder="write your answer…" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false">
-    </div>
-  </div>
+  <div class="question" id="wrap-q26"><div class="q-stem"><span class="q-num">26.</span><span class="q-text">I <span class="blank"></span> (not know) the answer.</span></div><div class="text-answer"><input type="text" name="q26" placeholder="write your answer…" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false"></div></div>
 
-  <!-- Q27 -->
-  <div class="question" id="wrap-q27">
-    <div class="q-stem">
-      <span class="q-num">27.</span>
-      <span class="q-text">She <span class="blank"></span> (be) at home yesterday.</span>
-    </div>
-    <div class="text-answer">
-      <input type="text" name="q27" placeholder="write your answer…" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false">
-    </div>
-  </div>
+  <div class="question" id="wrap-q27"><div class="q-stem"><span class="q-num">27.</span><span class="q-text">She <span class="blank"></span> (be) at home yesterday.</span></div><div class="text-answer"><input type="text" name="q27" placeholder="write your answer…" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false"></div></div>
 
-  <!-- SECTION 3 -->
-  <div class="section-label">Part 3 — Make a sentence using the given words</div>
+  <div class="section-label-test">Part 3 — Make a sentence using the given words</div>
 
-  <!-- Q28 -->
-  <div class="question" id="wrap-q28">
-    <div class="q-stem">
-      <span class="q-num">28.</span>
-      <span class="q-text">Write a sentence using: <strong>I / going / school</strong></span>
-    </div>
-    <div class="text-answer">
-      <input type="text" name="q28" placeholder="write a sentence…" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false">
-      <div class="text-hint">Use all three words. You can add extra words.</div>
-    </div>
-  </div>
+  <div class="question" id="wrap-q28"><div class="q-stem"><span class="q-num">28.</span><span class="q-text">Write a sentence using: <strong>I / going / school</strong></span></div><div class="text-answer"><input type="text" name="q28" placeholder="write a sentence…" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false"><div class="text-hint">Use all three words. You can add extra words.</div></div></div>
 
-  <!-- Q29 -->
-  <div class="question" id="wrap-q29">
-    <div class="q-stem">
-      <span class="q-num">29.</span>
-      <span class="q-text">Write a sentence using: <strong>she / eats / morning</strong></span>
-    </div>
-    <div class="text-answer">
-      <input type="text" name="q29" placeholder="write a sentence…" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false">
-    </div>
-  </div>
+  <div class="question" id="wrap-q29"><div class="q-stem"><span class="q-num">29.</span><span class="q-text">Write a sentence using: <strong>she / eats / morning</strong></span></div><div class="text-answer"><input type="text" name="q29" placeholder="write a sentence…" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false"></div></div>
 
-  <!-- Q30 -->
-  <div class="question" id="wrap-q30">
-    <div class="q-stem">
-      <span class="q-num">30.</span>
-      <span class="q-text">Write a sentence using: <strong>they / played / yesterday</strong></span>
-    </div>
-    <div class="text-answer">
-      <input type="text" name="q30" placeholder="write a sentence…" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false">
-    </div>
-  </div>
+  <div class="question" id="wrap-q30"><div class="q-stem"><span class="q-num">30.</span><span class="q-text">Write a sentence using: <strong>they / played / yesterday</strong></span></div><div class="text-answer"><input type="text" name="q30" placeholder="write a sentence…" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false"></div></div>
 
-  <!-- SECTION 4 -->
-  <div class="section-label">Part 4 — Read and answer</div>
+  <div class="section-label-test">Part 4 — Read and answer</div>
 
   <div class="question" style="background:#fdf9f7; border-color:#e8ddd8; margin-bottom: 24px;">
     <div class="q-stem" style="margin-bottom:0">
       <span class="q-num" style="color: var(--ink-light)">📖</span>
-      <span class="q-text" style="font-style:italic; color: var(--ink-light)">
-        "My name is Priya. I am 35 years old. I live in Chennai. I have two children. 
-        Every morning I drink tea and read the newspaper. On weekends, I like to cook new recipes."
-      </span>
+      <span class="q-text" style="font-style:italic; color: var(--ink-light)">"My name is Priya. I am 35 years old. I live in Chennai. I have two children. Every morning I drink tea and read the newspaper. On weekends, I like to cook new recipes."</span>
     </div>
   </div>
 
-  <!-- Q31 -->
-  <div class="question" id="wrap-q31">
-    <div class="q-stem">
-      <span class="q-num">31.</span>
-      <span class="q-text">How old is Priya?</span>
-    </div>
-    <div class="options">
-      <label class="option-label"><input type="radio" name="q31" value="a"><span class="radio-dot"></span> 25</label>
-      <label class="option-label"><input type="radio" name="q31" value="b"><span class="radio-dot"></span> 35</label>
-      <label class="option-label"><input type="radio" name="q31" value="c"><span class="radio-dot"></span> 45</label>
-    </div>
-  </div>
+  <div class="question" id="wrap-q31"><div class="q-stem"><span class="q-num">31.</span><span class="q-text">How old is Priya?</span></div><div class="options"><label class="option-label"><input type="radio" name="q31" value="a"><span class="radio-dot"></span> 25</label><label class="option-label"><input type="radio" name="q31" value="b"><span class="radio-dot"></span> 35</label><label class="option-label"><input type="radio" name="q31" value="c"><span class="radio-dot"></span> 45</label></div></div>
 
-  <!-- Q32 -->
-  <div class="question" id="wrap-q32">
-    <div class="q-stem">
-      <span class="q-num">32.</span>
-      <span class="q-text">What does Priya drink every morning?</span>
-    </div>
-    <div class="options">
-      <label class="option-label"><input type="radio" name="q32" value="a"><span class="radio-dot"></span> Coffee</label>
-      <label class="option-label"><input type="radio" name="q32" value="b"><span class="radio-dot"></span> Juice</label>
-      <label class="option-label"><input type="radio" name="q32" value="c"><span class="radio-dot"></span> Tea</label>
-    </div>
-  </div>
+  <div class="question" id="wrap-q32"><div class="q-stem"><span class="q-num">32.</span><span class="q-text">What does Priya drink every morning?</span></div><div class="options"><label class="option-label"><input type="radio" name="q32" value="a"><span class="radio-dot"></span> Coffee</label><label class="option-label"><input type="radio" name="q32" value="b"><span class="radio-dot"></span> Juice</label><label class="option-label"><input type="radio" name="q32" value="c"><span class="radio-dot"></span> Tea</label></div></div>
 
-  <!-- Q33 -->
-  <div class="question" id="wrap-q33">
-    <div class="q-stem">
-      <span class="q-num">33.</span>
-      <span class="q-text">Where does Priya live?</span>
-    </div>
-    <div class="options">
-      <label class="option-label"><input type="radio" name="q33" value="a"><span class="radio-dot"></span> Mumbai</label>
-      <label class="option-label"><input type="radio" name="q33" value="b"><span class="radio-dot"></span> Chennai</label>
-      <label class="option-label"><input type="radio" name="q33" value="c"><span class="radio-dot"></span> Delhi</label>
-    </div>
-  </div>
+  <div class="question" id="wrap-q33"><div class="q-stem"><span class="q-num">33.</span><span class="q-text">Where does Priya live?</span></div><div class="options"><label class="option-label"><input type="radio" name="q33" value="a"><span class="radio-dot"></span> Mumbai</label><label class="option-label"><input type="radio" name="q33" value="b"><span class="radio-dot"></span> Chennai</label><label class="option-label"><input type="radio" name="q33" value="c"><span class="radio-dot"></span> Delhi</label></div></div>
 
-  <!-- Q34 -->
-  <div class="question" id="wrap-q34">
-    <div class="q-stem">
-      <span class="q-num">34.</span>
-      <span class="q-text">What does she like to do on weekends?</span>
-    </div>
-    <div class="options">
-      <label class="option-label"><input type="radio" name="q34" value="a"><span class="radio-dot"></span> Watch TV</label>
-      <label class="option-label"><input type="radio" name="q34" value="b"><span class="radio-dot"></span> Cook new recipes</label>
-      <label class="option-label"><input type="radio" name="q34" value="c"><span class="radio-dot"></span> Go for a walk</label>
-    </div>
-  </div>
+  <div class="question" id="wrap-q34"><div class="q-stem"><span class="q-num">34.</span><span class="q-text">What does she like to do on weekends?</span></div><div class="options"><label class="option-label"><input type="radio" name="q34" value="a"><span class="radio-dot"></span> Watch TV</label><label class="option-label"><input type="radio" name="q34" value="b"><span class="radio-dot"></span> Cook new recipes</label><label class="option-label"><input type="radio" name="q34" value="c"><span class="radio-dot"></span> Go for a walk</label></div></div>
 
-  <!-- Q35 -->
-  <div class="question" id="wrap-q35">
-    <div class="q-stem">
-      <span class="q-num">35.</span>
-      <span class="q-text">Priya has <span class="blank"></span> children.</span>
-    </div>
-    <div class="options">
-      <label class="option-label"><input type="radio" name="q35" value="a"><span class="radio-dot"></span> one</label>
-      <label class="option-label"><input type="radio" name="q35" value="b"><span class="radio-dot"></span> two</label>
-      <label class="option-label"><input type="radio" name="q35" value="c"><span class="radio-dot"></span> three</label>
-    </div>
-  </div>
+  <div class="question" id="wrap-q35"><div class="q-stem"><span class="q-num">35.</span><span class="q-text">Priya has <span class="blank"></span> children.</span></div><div class="options"><label class="option-label"><input type="radio" name="q35" value="a"><span class="radio-dot"></span> one</label><label class="option-label"><input type="radio" name="q35" value="b"><span class="radio-dot"></span> two</label><label class="option-label"><input type="radio" name="q35" value="c"><span class="radio-dot"></span> three</label></div></div>
 
-  <!-- Submit -->
   <div class="submit-area">
-    <p>Take as long as you need. When you're ready, click below.<br>
-    There is no time limit and no pass or fail.</p>
+    <p>Take as long as you need. When you're ready, click below.<br>There is no time limit and no pass or fail.</p>
     <button class="btn-submit" onclick="submitQuiz()">I'm done — submit answers</button>
-    <div class="warning" id="warningMsg">
-      You may have missed a question or two — but no problem, your answers have been saved!
-    </div>
+    <div class="warning" id="warningMsg">You may have missed a question or two — but no problem, your answers have been saved!</div>
   </div>
 
   <div class="done-msg" id="doneMsg">
     <h2>Well done! 🎉</h2>
-    <p>You finished the practice. Every question you answered is a step forward.<br>
-    Keep going — you're doing great.</p>
+    <p>Your answers have been saved to a file.<br>Please send that file to your teacher.</p>
   </div>
 
 </div><!-- /container -->
+</div><!-- /testMode -->
 
 <script>
-  // ── Paste your Apps Script Web App URL here ──
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby5yt53fes2e9MmyyaKHy0qkBxhmm9pt9PokviheLzMmyOEZ3CAuNkNpoYXotHAsn-XIw/exec";
-  const TOKEN = new URLSearchParams(window.location.search).get("t") || "";
+// ══════════════════════════════════════════
+// ANSWER KEYS
+// ══════════════════════════════════════════
+const MODE = new URLSearchParams(window.location.search).get("mode") || "test";
+const mcqAnswers = {
+  q1:"a",  q2:"b",  q3:"b",  q4:"b",  q5:"b",
+  q6:"a",  q7:"a",  q8:"b",  q9:"b",  q10:"b",
+  q11:"a", q12:"a", q13:"a", q14:"a", q15:"a",
+  q16:"b", q17:"b", q18:"a", q19:"b", q20:"b",
+  q31:"b", q32:"c", q33:"b", q34:"b", q35:"b"
+};
+const fillAnswers = {
+  q21: ["am"],
+  q22: ["has"],
+  q23: ["go"],
+  q24: ["are eating", "eating"],
+  q25: ["lives"],
+  q26: ["don't know", "do not know"],
+  q27: ["was"]
+};
+const sentenceQs = ["q28","q29","q30"];
+const mcqLabels = {
+  q1:"I ___ a student", q2:"She ___ to work every day", q3:"They ___ watching TV right now",
+  q4:"I have ___ umbrella", q5:"He ___ from Delhi", q6:"___ you like tea?",
+  q7:"This is ___ bag", q8:"I ___ to the market yesterday", q9:"She is ___ than her sister",
+  q10:"There ___ three chairs in the room", q11:"What time ___ it?", q12:"I don't ___ spicy food",
+  q13:"I can ___ a little English", q14:"This is ___ house", q15:"I have ___ friends here",
+  q16:"She ___ not like coffee", q17:"I am ___ a book now", q18:"Where ___ you live?",
+  q19:"We ___ dinner at 8 last night", q20:"The weather ___ very hot today",
+  q31:"How old is Priya?", q32:"What does Priya drink every morning?",
+  q33:"Where does Priya live?", q34:"What does she like to do on weekends?", q35:"Priya has ___ children"
+};
+const buckets = {
+  "Subject-verb agreement":  ["q1","q2","q3","q5","q6","q10","q11","q16","q18","q20"],
+  "Tense (past)":            ["q8","q19","q27"],
+  "Tense (present cont.)":   ["q17","q24"],
+  "Articles (a/an/the)":     ["q4"],
+  "Pronouns & possessives":  ["q7","q14"],
+  "Comparatives":            ["q9"],
+  "Modals (can)":            ["q13"],
+  "Quantifiers":             ["q15"],
+  "Negation":                ["q12","q16","q26"],
+  "Verb form (fill-in)":     ["q21","q22","q23","q25"],
+  "Reading comprehension":   ["q31","q32","q33","q34","q35"]
+};
 
-  // Answer key — MCQ only (auto-graded)
-  const mcqAnswers = {
-    q1:"a",  q2:"b",  q3:"b",  q4:"b",  q5:"b",
-    q6:"a",  q7:"a",  q8:"b",  q9:"b",  q10:"b",
-    q11:"a", q12:"a", q13:"a", q14:"a", q15:"a",
-    q16:"b", q17:"b", q18:"a", q19:"b", q20:"b",
-    q31:"b", q32:"c", q33:"b", q34:"b", q35:"b"
-  };
+// ══════════════════════════════════════════
+// TEST MODE
+// ══════════════════════════════════════════
+function initTest() {
+  document.getElementById("testMode").style.display = "block";
 
-  // Fill-in accepted answers (lowercase, trimmed)
-  const fillAnswers = {
-    q21: ["am"],
-    q22: ["has"],
-    q23: ["go"],
-    q24: ["are eating", "eating"],
-    q25: ["lives"],
-    q26: ["don't know", "do not know"],
-    q27: ["was"]
-  };
-
-  // Sentence questions — manual review only
-  const sentenceQs = ["q28","q29","q30"];
-
-  // Progress bar
   const allInputs = document.querySelectorAll('input[type="radio"], input[type="text"]');
-  const total = 35;
-  let answered = new Set();
-
   allInputs.forEach(input => {
     input.addEventListener('change', updateProgress);
     input.addEventListener('input', updateProgress);
   });
-
-  // Mark card as answered on selection
   document.querySelectorAll('input[type="radio"]').forEach(radio => {
     radio.addEventListener('change', function() {
       const card = document.getElementById('wrap-' + this.name);
@@ -852,186 +408,200 @@
       else if (card) card.classList.remove('answered');
     });
   });
+}
 
-  function updateProgress() {
-    let count = 0;
-    // count answered MCQ
-    for (let q in mcqAnswers) {
-      if (document.querySelector(`[name=${q}]:checked`)) count++;
-    }
-    // count fill-ins
-    for (let q in fillAnswers) {
-      if (document.querySelector(`[name=${q}]`).value.trim()) count++;
-    }
-    // count sentence
-    sentenceQs.forEach(q => {
-      if (document.querySelector(`[name=${q}]`).value.trim()) count++;
+function updateProgress() {
+  let count = 0;
+  for (let q in mcqAnswers) { if (document.querySelector(`[name=${q}]:checked`)) count++; }
+  for (let q in fillAnswers) { if (document.querySelector(`[name=${q}]`).value.trim()) count++; }
+  sentenceQs.forEach(q => { if (document.querySelector(`[name=${q}]`).value.trim()) count++; });
+  document.getElementById('progressBar').style.width = Math.round((count / 35) * 100) + '%';
+}
+
+function submitQuiz() {
+  let missing = 0;
+  for (let q in mcqAnswers) { if (!document.querySelector(`[name=${q}]:checked`)) missing++; }
+  for (let q in fillAnswers) { if (!document.querySelector(`[name=${q}]`).value.trim()) missing++; }
+  sentenceQs.forEach(q => { if (!document.querySelector(`[name=${q}]`).value.trim()) missing++; });
+  if (missing > 0) document.getElementById('warningMsg').classList.add('show');
+  else document.getElementById('warningMsg').classList.remove('show');
+
+  // Score
+  let mcqScore = 0, fillScore = 0;
+  const mcqDetail = {};
+  for (let q in mcqAnswers) {
+    const checked = document.querySelector(`[name=${q}]:checked`);
+    const given = checked ? checked.value : null;
+    const skipped = given === null;
+    const pass = given === mcqAnswers[q];
+    if (pass) mcqScore++;
+    mcqDetail[q] = { question: mcqLabels[q], given: given || "", correct: mcqAnswers[q], pass, skipped };
+  }
+  const fillDetail = {};
+  for (let q in fillAnswers) {
+    const val = document.querySelector(`[name=${q}]`).value.toLowerCase().trim();
+    const skipped = val === "";
+    const correct = fillAnswers[q].includes(val);
+    if (correct) fillScore++;
+    fillDetail[q] = { given: val, accepted: fillAnswers[q], correct, skipped };
+  }
+  const sentenceDetail = {};
+  sentenceQs.forEach(q => { sentenceDetail[q] = document.querySelector(`[name=${q}]`).value.trim(); });
+
+  const mcqTotal = Object.keys(mcqAnswers).length;
+  const fillTotal = Object.keys(fillAnswers).length;
+  const autoTotal = mcqTotal + fillTotal;
+  const autoScore = mcqScore + fillScore;
+  const pct = Math.round((autoScore / autoTotal) * 100);
+  const readingScore = ["q31","q32","q33","q34","q35"].filter(q => mcqDetail[q] && mcqDetail[q].pass).length;
+
+  const bucketResults = {};
+  for (let topic in buckets) {
+    const qs = buckets[topic];
+    let correct = 0, wrong = 0, skipped = 0;
+    qs.forEach(q => {
+      if (mcqDetail[q]) {
+        if (mcqDetail[q].pass) correct++;
+        else if (mcqDetail[q].skipped) skipped++;
+        else wrong++;
+      } else if (fillDetail[q]) {
+        if (fillDetail[q].correct) correct++;
+        else if (fillDetail[q].skipped) skipped++;
+        else wrong++;
+      }
     });
-    const pct = Math.round((count / total) * 100);
-    document.getElementById('progressBar').style.width = pct + '%';
+    bucketResults[topic] = { correct, wrong, skipped, total: qs.length };
   }
 
-  function submitQuiz() {
-    // Check completion
-    let missing = 0;
-    for (let q in mcqAnswers) {
-      if (!document.querySelector(`[name=${q}]:checked`)) missing++;
-    }
-    for (let q in fillAnswers) {
-      if (!document.querySelector(`[name=${q}]`).value.trim()) missing++;
-    }
-    sentenceQs.forEach(q => {
-      if (!document.querySelector(`[name=${q}]`).value.trim()) missing++;
-    });
+  const mcqWrong = Object.keys(mcqDetail).filter(q => !mcqDetail[q].pass)
+    .map(q => { const d = mcqDetail[q]; return q + ': "' + d.question + '" (gave: ' + d.given + ', correct: ' + d.correct + ')'; });
 
-    if (missing > 0) {
-      document.getElementById('warningMsg').classList.add('show');
-    } else {
-      document.getElementById('warningMsg').classList.remove('show');
-    }
+  let band;
+  if (pct >= 85) band = "Solid A2 — ready for Phase 2";
+  else if (pct >= 65) band = "Mid A2 — on track, some gaps to fill";
+  else if (pct >= 45) band = "A1–A2 boundary — foundation work needed";
+  else band = "A1 — start from basics";
 
-    // ── Score calculation (hidden from user) ──
-    let mcqScore = 0, fillScore = 0;
-    const mcqTotal = Object.keys(mcqAnswers).length;
-    const fillTotal = Object.keys(fillAnswers).length;
+  const payload = { pct, band, mcqScore, mcqTotal, fillScore, fillTotal, readingScore, bucketResults, fillDetail, sentenceDetail, mcqWrong, mcqDetail, ts: new Date().toISOString() };
 
-    // MCQ — per-question detail
-    const mcqDetail = {};
-    const mcqLabels = {
-      q1:  "I ___ a student",
-      q2:  "She ___ to work every day",
-      q3:  "They ___ watching TV right now",
-      q4:  "I have ___ umbrella",
-      q5:  "He ___ from Delhi",
-      q6:  "___ you like tea?",
-      q7:  "This is ___ bag",
-      q8:  "I ___ to the market yesterday",
-      q9:  "She is ___ than her sister",
-      q10: "There ___ three chairs in the room",
-      q11: "What time ___ it?",
-      q12: "I don't ___ spicy food",
-      q13: "I can ___ a little English",
-      q14: "This is ___ house",
-      q15: "I have ___ friends here",
-      q16: "She ___ not like coffee",
-      q17: "I am ___ a book now",
-      q18: "Where ___ you live?",
-      q19: "We ___ dinner at 8 last night",
-      q20: "The weather ___ very hot today",
-      q31: "How old is Priya?",
-      q32: "What does Priya drink every morning?",
-      q33: "Where does Priya live?",
-      q34: "What does she like to do on weekends?",
-      q35: "Priya has ___ children"
-    };
-    for (let q in mcqAnswers) {
-      const checked = document.querySelector(`[name=${q}]:checked`);
-      const given = checked ? checked.value : null;
-      const correct = given === mcqAnswers[q];
-      if (correct) mcqScore++;
-      mcqDetail[q] = {
-        question: mcqLabels[q],
-        given: given || "(no answer)",
-        correct: mcqAnswers[q],
-        pass: correct
-      };
-    }
+  // Pack and download
+  const packed = pack(payload);
+  const blob = new Blob([packed], { type: "text/plain" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "results-" + new Date().toISOString().slice(0,10) + ".gauge";
+  a.click();
+  URL.revokeObjectURL(url);
 
-    // Fill-in
-    const fillDetail = {};
-    for (let q in fillAnswers) {
-      const val = document.querySelector(`[name=${q}]`).value.toLowerCase().trim();
-      const correct = fillAnswers[q].includes(val);
-      if (correct) fillScore++;
-      fillDetail[q] = { given: val, accepted: fillAnswers[q], correct };
-    }
+  document.getElementById('doneMsg').classList.add('show');
+  document.querySelector('.submit-area').style.display = 'none';
+  window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+}
 
-    // Sentences (manual review)
-    const sentenceDetail = {};
-    sentenceQs.forEach(q => {
-      sentenceDetail[q] = document.querySelector(`[name=${q}]`).value.trim();
-    });
+// ══════════════════════════════════════════
+// EVAL MODE
+// ══════════════════════════════════════════
+function initEval() {
+  document.getElementById("evalMode").style.display = "block";
 
-    // Auto-graded total
-    const autoTotal = mcqTotal + fillTotal;
-    const autoScore = mcqScore + fillScore;
-    const pct = Math.round((autoScore / autoTotal) * 100);
+  const fileInput = document.getElementById("fileInput");
+  fileInput.addEventListener("change", e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => renderResults(ev.target.result.trim());
+    reader.readAsText(file);
+  });
 
-    // Breakdown by section
-    const readingScore = ["q31","q32","q33","q34","q35"].filter(q => {
-      const c = document.querySelector(`[name=${q}]:checked`);
-      return c && c.value === mcqAnswers[q];
-    }).length;
+  const zone = document.querySelector(".upload-zone");
+  zone.addEventListener("dragover", e => { e.preventDefault(); zone.style.borderColor = "var(--accent)"; });
+  zone.addEventListener("dragleave", () => { zone.style.borderColor = ""; });
+  zone.addEventListener("drop", e => {
+    e.preventDefault(); zone.style.borderColor = "";
+    const file = e.dataTransfer.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => renderResults(ev.target.result.trim());
+    reader.readAsText(file);
+  });
+}
 
-    // Topic buckets — which questions test which skill
-    const buckets = {
-      "Subject-verb agreement":  ["q1","q2","q3","q5","q6","q10","q11","q16","q18","q20"],
-      "Tense (past)":            ["q8","q19","q27"],
-      "Tense (present cont.)":   ["q17","q24"],
-      "Articles (a/an/the)":     ["q4"],
-      "Pronouns & possessives":  ["q7","q14"],
-      "Comparatives":            ["q9"],
-      "Modals (can)":            ["q13"],
-      "Quantifiers":             ["q15"],
-      "Negation":                ["q12","q16","q26"],
-      "Verb form (fill-in)":     ["q21","q22","q23","q25"],
-      "Reading comprehension":   ["q31","q32","q33","q34","q35"]
-    };
+function renderResults(raw) {
+  let data;
+  try { data = unpack(raw); }
+  catch(e) { alert("Could not read this file. Make sure it's a valid .gauge file."); return; }
 
-    const bucketResults = {};
-    for (let topic in buckets) {
-      const qs = buckets[topic];
-      let correct = 0, total = qs.length;
-      qs.forEach(q => {
-        if (mcqDetail[q] && mcqDetail[q].pass) correct++;
-        else if (fillDetail[q] && fillDetail[q].correct) correct++;
-      });
-      bucketResults[topic] = correct + " / " + total + (correct === total ? " ✅" : correct === 0 ? " ❌" : " ⚠️");
-    }
+  document.getElementById("rBand").textContent = data.band;
+  document.getElementById("rPct").textContent = data.pct + "% auto-graded · " + new Date(data.ts).toLocaleDateString("en-IN");
+  document.getElementById("rOverall").textContent = (data.mcqScore + data.fillScore) + " / " + (data.mcqTotal + data.fillTotal);
+  document.getElementById("rMCQ").textContent = data.mcqScore + " / " + data.mcqTotal;
+  document.getElementById("rFill").textContent = data.fillScore + " / " + data.fillTotal;
+  document.getElementById("rReading").textContent = data.readingScore + " / 5";
 
-    let band;
-    if (pct >= 85) band = "Solid A2 — ready for Phase 2";
-    else if (pct >= 65) band = "Mid A2 — on track, some gaps to fill";
-    else if (pct >= 45) band = "A1–A2 boundary — foundation work needed";
-    else band = "A1 — start from basics";
-
-    // List of wrong MCQ questions for the sheet
-    const mcqWrong = Object.keys(mcqDetail)
-      .filter(q => !mcqDetail[q].pass)
-      .map(q => q + ": \"" + mcqDetail[q].question + "\" (gave: " + mcqDetail[q].given + ", correct: " + mcqDetail[q].correct + ")");
-
-    const payload = {
-      token: TOKEN,
-      pct, band,
-      mcqScore, mcqTotal,
-      fillScore, fillTotal,
-      readingScore,
-      bucketResults,
-      fillDetail,
-      sentenceDetail,
-      mcqWrong
-    };
-
-    // ── GET to Google Sheet (no CORS issues with Apps Script) ──
-    if (SCRIPT_URL && SCRIPT_URL !== "YOUR_APPS_SCRIPT_URL_HERE") {
-      const url = SCRIPT_URL + "?data=" + encodeURIComponent(JSON.stringify(payload));
-      fetch(url, { method: "GET", mode: "no-cors" })
-        .catch(err => console.warn("Sheet logging failed:", err));
-    } else {
-      // ── Fallback: console (remove once SCRIPT_URL is set) ──
-      console.log("📊 PLACEMENT TEST RESULTS");
-      console.log("Overall: " + autoScore + " / " + autoTotal + " (" + pct + "%) — " + band);
-      console.log("Topic breakdown:", bucketResults);
-      console.log("MCQ wrong:", mcqWrong);
-      console.log("Fill-in detail:", fillDetail);
-      console.log("Sentences:", sentenceDetail);
-    }
-
-    // Show friendly done message, hide form
-    document.getElementById('doneMsg').classList.add('show');
-    document.querySelector('.submit-area').style.display = 'none';
-    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+  // Buckets
+  const bucketsEl = document.getElementById("rBuckets");
+  bucketsEl.innerHTML = "";
+  for (let topic in data.bucketResults) {
+    const b = data.bucketResults[topic];
+    const allCorrect = b.correct === b.total;
+    const noneAttempted = b.correct === 0 && b.wrong === 0;
+    const cls = allCorrect ? "pass" : (b.wrong > 0 ? "fail" : "warn");
+    const emoji = allCorrect ? "✅" : (b.wrong > 0 ? "❌" : "⏭️");
+    const detail = allCorrect ? "" : ` <span style="font-size:0.78rem;opacity:0.7">(${b.correct} correct, ${b.wrong} wrong, ${b.skipped} skipped)</span>`;
+    bucketsEl.innerHTML += `<div class="bucket-row ${cls}"><span>${emoji} ${topic}${detail}</span><span class="score">${b.correct} / ${b.total}</span></div>`;
   }
+
+  // MCQ detail
+  const mcqEl = document.getElementById("rMCQDetail");
+  mcqEl.innerHTML = "";
+  for (let q in data.mcqDetail) {
+    const d = data.mcqDetail[q];
+    let cls, marker, detail;
+    if (d.pass) {
+      cls = "pass"; marker = "✅"; detail = "";
+    } else if (d.skipped) {
+      cls = "fail"; marker = "⏭️"; detail = ` — <em>not attempted</em> (correct: <strong>${d.correct}</strong>)`;
+    } else {
+      cls = "fail"; marker = "❌"; detail = ` — gave: <strong>${d.given}</strong>, correct: <strong>${d.correct}</strong>`;
+    }
+    mcqEl.innerHTML += `<div class="mcq-row ${cls}"><div class="q-label">${marker} ${q}: "${d.question}"</div>${detail ? '<div class="q-detail">' + detail + '</div>' : ''}</div>`;
+  }
+
+  // Fill-in
+  const fillEl = document.getElementById("rFillDetail");
+  fillEl.innerHTML = "";
+  for (let q in data.fillDetail) {
+    const d = data.fillDetail[q];
+    let cls, marker, detail;
+    if (d.correct) {
+      cls = "pass"; marker = "✅"; detail = `gave: "${d.given}"`;
+    } else if (d.skipped) {
+      cls = "fail"; marker = "⏭️"; detail = `<em>not attempted</em> — accepted: ${d.accepted.join(" / ")}`;
+    } else {
+      cls = "fail"; marker = "❌"; detail = `gave: "<strong>${d.given}</strong>" — accepted: ${d.accepted.join(" / ")}`;
+    }
+    fillEl.innerHTML += `<div class="fill-row ${cls}">${marker} ${q}: ${detail}</div>`;
+  }
+
+  // Sentences
+  const sentEl = document.getElementById("rSentences");
+  sentEl.innerHTML = "";
+  const sentLabels = { q28: "I / going / school", q29: "she / eats / morning", q30: "they / played / yesterday" };
+  for (let q in data.sentenceDetail) {
+    const val = data.sentenceDetail[q];
+    const isEmpty = !val.trim();
+    sentEl.innerHTML += `<div class="sentence-row"><div class="q-id">${q} — prompt: ${sentLabels[q]}</div><div class="q-text ${isEmpty ? 'empty' : ''}">${isEmpty ? "(no answer)" : val}</div></div>`;
+  }
+
+  document.getElementById("resultsPanel").classList.add("show");
+  document.getElementById("resultsPanel").scrollIntoView({ behavior: "smooth" });
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+  if (MODE === "eval") initEval();
+  else initTest();
+});
 </script>
 </body>
 </html>
